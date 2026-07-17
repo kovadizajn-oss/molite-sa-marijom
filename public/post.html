@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objava — Molite sa Marijom</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero" id="postHero" style="display:none;">
+  <div class="container">
+    <h1 id="postTitle"></h1>
+    <p class="lead" id="postMeta"></p>
+  </div>
+</section>
+
+<section id="postLoading">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <p style="color:var(--muted);">Učitavanje objave...</p>
+  </div>
+</section>
+
+<section id="postBody" style="display:none;">
+  <div class="container" style="max-width:760px;">
+    <div class="ph" id="postImage" style="min-height:260px; margin-bottom:32px;"><span></span></div>
+    <div id="postContent" style="font-size:1.05rem; line-height:1.9; color:var(--ink);"></div>
+    <div style="margin-top:40px;">
+      <a href="blog.html" class="btn btn-outline">← Natrag na blog</a>
+    </div>
+  </div>
+</section>
+
+<section id="postNotFound" style="display:none;">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <h2>Objava nije pronađena</h2>
+    <p style="color:var(--muted); margin-bottom:24px;">Možda je uklonjena ili link nije ispravan.</p>
+    <a href="blog.html" class="btn btn-gold">Natrag na blog</a>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function fmtDate(s) {
+    if (!s) return '';
+    const d = new Date(s.replace(' ', 'T') + 'Z');
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) {
+    document.getElementById('postLoading').style.display = 'none';
+    document.getElementById('postNotFound').style.display = '';
+  } else {
+    fetch('/api/blog/' + id)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then((p) => {
+        document.title = p.title + ' — Molite sa Marijom';
+        document.getElementById('postTitle').textContent = p.title;
+        document.getElementById('postMeta').textContent = [fmtDate(p.created_at), p.category].filter(Boolean).join(' · ');
+        document.querySelector('#postImage span').textContent = p.image_note || 'Slika uz objavu';
+        const paragraphs = (p.content || p.excerpt || '').split(/\n+/).filter(Boolean);
+        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
+
+        document.getElementById('postLoading').style.display = 'none';
+        document.getElementById('postHero').style.display = '';
+        document.getElementById('postBody').style.display = '';
+      })
+      .catch(() => {
+        document.getElementById('postLoading').style.display = 'none';
+        document.getElementById('postNotFound').style.display = '';
+      });
+  }
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

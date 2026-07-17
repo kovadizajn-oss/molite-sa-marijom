@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marija odgovara — Molite sa Marijom</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html" class="active">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Marija odgovara na vaša pitanja</h1>
+    <p class="lead">Pošaljite svoje pitanje anonimno i pročitajte odgovore iz vjere, iskustva i srca.</p>
+    <p class="verse">"Tražite i naći ćete; kucajte i otvorit će vam se." – Matej 7,7</p>
+  </div>
+</section>
+
+<section>
+  <div class="container two-col">
+    <div class="form-box">
+      <h2>Postavite pitanje</h2>
+      <p style="color:var(--brown-2); font-size:0.9rem;">Vaše pitanje može ostati potpuno anonimno. Odgovor će biti objavljen na stranici (bez vaših osobnih podataka).</p>
+      <form id="questionForm">
+        <input class="field" type="text" id="qName" placeholder="Vaše ime (opcionalno)">
+        <input class="field" type="email" id="qEmail" placeholder="Email (samo ako želite osobni odgovor)">
+        <textarea class="field" id="qQuestion" placeholder="Vaše pitanje..." required></textarea>
+        <button class="btn btn-gold btn-block" type="submit">Pošalji pitanje</button>
+        <p id="qFormMsg" style="margin-top:12px; font-size:0.88rem;"></p>
+      </form>
+    </div>
+    <div class="ph" style="min-height:380px;"><span>Slika: krunica, svijeće i otvorena bilježnica</span></div>
+  </div>
+</section>
+
+<section style="background:var(--cream-2);">
+  <div class="container" style="max-width:800px;">
+    <div class="section-head">
+      <div><h2>Nedavna pitanja i odgovori</h2><div class="divider"></div></div>
+    </div>
+    <div id="questionsList">
+      <p style="color:var(--muted);">Učitavanje...</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  fetch('/api/questions')
+    .then((r) => r.json())
+    .then((rows) => {
+      const list = document.getElementById('questionsList');
+      if (!rows.length) {
+        list.innerHTML = '<p style="color:var(--muted);">Još nema objavljenih pitanja. Postavite prvo!</p>';
+        return;
+      }
+      list.innerHTML = rows.map((r) => `
+        <div class="faq-item">
+          <h3>${escHtml(r.question)}</h3>
+          <p>${escHtml(r.answer)}</p>
+        </div>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('questionsList').innerHTML = '<p style="color:var(--muted);">Pitanja se trenutno ne mogu učitati.</p>';
+    });
+
+  document.getElementById('questionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('qName').value.trim();
+    const email = document.getElementById('qEmail').value.trim();
+    const question = document.getElementById('qQuestion').value.trim();
+    const msgEl = document.getElementById('qFormMsg');
+    if (!question) { msgEl.style.color = '#a34a3c'; msgEl.textContent = 'Upišite pitanje.'; return; }
+    try {
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, question }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Greška pri slanju.');
+      msgEl.style.color = 'var(--gold-dark)';
+      msgEl.textContent = data.message;
+      document.getElementById('questionForm').reset();
+    } catch (err) {
+      msgEl.style.color = '#a34a3c';
+      msgEl.textContent = err.message;
+    }
+  });
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog &amp; razmišljanja — Molite sa Marijom</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Blog &amp; razmišljanja</h1>
+    <p class="lead">Dnevne misli, poticaji i iskreni razgovori o životu vjere — za dane kad je lako i za dane kad nije.</p>
+    <p class="verse">"Tvoja riječ nozi je mojoj svjetiljka i svjetlo mojoj stazi." – Psalam 119,105</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="tag-row" style="justify-content:center;">
+      <span class="tag">Sve objave</span>
+      <span class="tag">Molitva</span>
+      <span class="tag">Svakodnevni život</span>
+      <span class="tag">Biblija</span>
+      <span class="tag">Milost</span>
+      <span class="tag">Post i korizma</span>
+    </div>
+
+    <div class="grid grid-3" id="blogGrid">
+      <p class="empty-msg">Učitavanje objava...</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function fmtDate(s) {
+    if (!s) return '';
+    const d = new Date(s.replace(' ', 'T') + 'Z');
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  fetch('/api/blog')
+    .then((r) => r.json())
+    .then((posts) => {
+      const grid = document.getElementById('blogGrid');
+      if (!posts.length) {
+        grid.innerHTML = '<p style="color:var(--muted);">Trenutno nema objava. Vratite se uskoro!</p>';
+        return;
+      }
+      grid.innerHTML = posts.map((p) => `
+        <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+          <div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>
+          <div class="card-body">
+            <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
+            <h3>${escHtml(p.title)}</h3>
+            <p>${escHtml(p.excerpt || (p.content || '').slice(0, 120))}</p>
+            <span class="card-link">Pročitaj više →</span>
+          </div>
+        </a>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('blogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
+    });
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

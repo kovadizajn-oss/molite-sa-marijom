@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hodočašća — Molite sa Marijom</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html" class="active">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Putujmo zajedno — Hodočašća</h1>
+    <p class="lead">Pridružite nam se na putovanjima u sveta mjesta, gdje se molitva pretvara u zajedničko iskustvo.</p>
+    <p class="verse">"Kako mi je milo kad mi rekoše: Hajdemo u Dom Gospodnji!" – Psalam 122,1</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Nadolazeća hodočašća</h2><div class="divider"></div></div>
+    </div>
+    <div class="grid grid-3" id="hodoGrid">
+      <p style="color:var(--muted);">Učitavanje hodočašća...</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  fetch('/api/hodocasca')
+    .then((r) => r.json())
+    .then((rows) => {
+      const grid = document.getElementById('hodoGrid');
+      if (!rows.length) {
+        grid.innerHTML = '<p style="color:var(--muted);">Trenutno nema najavljenih hodočašća. Vratite se uskoro!</p>';
+        return;
+      }
+      grid.innerHTML = rows.map((r) => `
+        <div class="card">
+          <div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(r.image_note || 'Slika hodočašća')}</span></div>
+          <div class="card-body">
+            <p style="color:var(--gold-dark); font-size:0.78rem; font-weight:500;">${escHtml(r.date_range)}</p>
+            <h3>${escHtml(r.title)}${r.location ? ', ' + escHtml(r.location) : ''}</h3>
+            <p>${escHtml(r.description)}</p>
+          </div>
+        </div>
+      `).join('');
+    })
+    .catch(() => {
+      document.getElementById('hodoGrid').innerHTML = '<p style="color:var(--muted);">Hodočašća se trenutno ne mogu učitati.</p>';
+    });
+</script>
+
+<section style="background:var(--cream-2);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Sjećanja s prošlih putovanja</h2><div class="divider"></div></div>
+    </div>
+    <div class="grid grid-4">
+      <div class="ph" style="min-height:150px;"><span>Foto: skupina hodočasnika</span></div>
+      <div class="ph" style="min-height:150px;"><span>Foto: molitva pod otvorenim nebom</span></div>
+      <div class="ph" style="min-height:150px;"><span>Foto: sveta misa na putovanju</span></div>
+      <div class="ph" style="min-height:150px;"><span>Foto: zajednički trenutak zajednice</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container" style="max-width:760px;">
+    <div class="section-head">
+      <div><h2>Česta pitanja</h2><div class="divider"></div></div>
+    </div>
+    <div class="faq-item">
+      <h3>Trebam li prethodno iskustvo hodočašća?</h3>
+      <p>Ne, svi su dobrodošli — od potpunih početnika do iskusnih hodočasnika.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Što je uključeno u cijenu?</h3>
+      <p>Smještaj, prijevoz, duhovno vodstvo i program molitve. Detalji se objavljuju uz svako putovanje.</p>
+      </div>
+    <div class="faq-item">
+      <h3>Kako se prijaviti?</h3>
+      <p>Kontaktirajte nas putem stranice "Marija odgovara" ili emailom, a mi ćemo vam poslati sve informacije.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

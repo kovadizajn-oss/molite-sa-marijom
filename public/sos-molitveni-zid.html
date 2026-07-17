@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOS – Molitveni zid — Molite sa Marijom</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html" class="active">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>SOS – Molitveni zid</h1>
+    <p class="lead">Ostavite svoju molitvenu nakanu ovdje. Niste sami — zajednica moli s vama i za vas.</p>
+    <p class="verse">"Molite jedni za druge da ozdravite." – Jakov 5,16</p>
+  </div>
+</section>
+
+<section>
+  <div class="container two-col">
+    <div class="form-box">
+      <h2>Ostavite nakanu</h2>
+      <p style="color:var(--brown-2); font-size:0.9rem;">Vaša nakana može ostati potpuno anonimna. Nitko osim Marije neće vidjeti vaše podatke.</p>
+      <form id="prayerForm">
+        <input class="field" type="text" id="prayerName" placeholder="Vaše ime (opcionalno)">
+        <textarea class="field" id="prayerMessage" placeholder="Vaša molitvena nakana..." required></textarea>
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--brown-2); margin-bottom:16px;">
+          <input type="checkbox" id="prayerAnonymous" checked style="accent-color:var(--gold);"> Objavi na molitveni zid anonimno
+        </label>
+        <button class="btn btn-gold btn-block" type="submit">Pošalji nakanu</button>
+        <p id="prayerFormMsg" style="margin-top:12px; font-size:0.88rem;"></p>
+      </form>
+    </div>
+    <div>
+      <p class="eyebrow">Zašto molitveni zid?</p>
+      <h2>Nitko ne nosi teret sam</h2>
+      <div class="divider"></div>
+      <p>Kad podijelite svoju nakanu, ona postaje dio zajedničke molitve — ljudi diljem svijeta zaustavljaju se na trenutak i mole za vas, čak i kad se nikad nećete upoznati.</p>
+      <ul class="pill-list">
+        <li><span class="dot">✦</span> Vaša nakana ostaje na zidu 30 dana</li>
+        <li><span class="dot">✦</span> Možete odabrati potpunu anonimnost</li>
+        <li><span class="dot">✦</span> Marija osobno moli za sve pristigle nakane</li>
+        <li><span class="dot">✦</span> Svatko može kliknuti "Molim za ovo" jednom po nakani</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--cream-2);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Molitveni zid</h2><div class="divider"></div></div>
+      <p class="sub">Najnovije nakane zajednice</p>
+    </div>
+    <div class="grid grid-3" id="prayerWall">
+      <p style="color:var(--muted);">Učitavanje molitvenog zida...</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function timeAgo(s) {
+    if (!s) return '';
+    const then = new Date(s.replace(' ', 'T') + 'Z').getTime();
+    const days = Math.floor((Date.now() - then) / 86400000);
+    if (days <= 0) return 'danas';
+    if (days === 1) return 'prije 1 dan';
+    return 'prije ' + days + ' dana';
+  }
+
+  function getVoted() {
+    try {
+      return JSON.parse(localStorage.getItem('votedPrayers') || '[]');
+    } catch {
+      return [];
+    }
+  }
+  function markVoted(id) {
+    const voted = getVoted();
+    if (!voted.includes(id)) {
+      voted.push(id);
+      localStorage.setItem('votedPrayers', JSON.stringify(voted));
+    }
+  }
+
+  function loadWall() {
+    fetch('/api/prayers')
+      .then((r) => r.json())
+      .then((rows) => {
+        const wall = document.getElementById('prayerWall');
+        const voted = getVoted();
+        if (!rows.length) {
+          wall.innerHTML = '<p style="color:var(--muted);">Zid je trenutno prazan. Budite prvi koji će ostaviti nakanu.</p>';
+          return;
+        }
+        wall.innerHTML = rows.map((r) => {
+          const hasVoted = voted.includes(r.id);
+          const btn = hasVoted
+            ? `<button class="btn btn-outline" style="padding:8px 16px;font-size:0.72rem; opacity:0.75;" disabled>🙏 Hvala što molite s nama!</button>`
+            : `<button class="btn btn-outline" style="padding:8px 16px;font-size:0.72rem;" onclick="prayFor(${r.id}, this)">🙏 Molim za ovo</button>`;
+          return `
+          <div class="card"><div class="card-body">
+            <p style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:var(--brown);">"${escHtml(r.message)}"</p>
+            <p style="color:var(--muted); font-size:0.8rem; margin:12px 0 10px;">${r.anonymous ? 'Anonimno' : escHtml(r.name || 'Anonimno')} · ${timeAgo(r.created_at)} · 🙏 ${r.pray_count} osoba moli</p>
+            ${btn}
+          </div></div>
+        `;
+        }).join('');
+      })
+      .catch(() => {
+        document.getElementById('prayerWall').innerHTML = '<p style="color:var(--muted);">Zid se trenutno ne može učitati.</p>';
+      });
+  }
+
+  window.prayFor = async function (id, btn) {
+    btn.disabled = true;
+    btn.textContent = '🙏 Hvala što molite s nama!';
+    try {
+      const res = await fetch('/api/prayers/' + id + '/pray', { method: 'POST' });
+      if (res.ok) {
+        markVoted(id);
+        btn.textContent = '🙏 Hvala što molite s nama!';
+        btn.style.opacity = '0.85';
+      } else if (res.status === 409) {
+        markVoted(id);
+        btn.textContent = '🙏 Hvala što molite s nama!';
+        btn.style.opacity = '0.75';
+      } else {
+        btn.disabled = false;
+        btn.textContent = '🙏 Molim za ovo';
+        return;
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = '🙏 Molim za ovo';
+      return;
+    }
+    setTimeout(loadWall, 1200);
+  };
+
+  loadWall();
+
+  document.getElementById('prayerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('prayerName').value.trim();
+    const message = document.getElementById('prayerMessage').value.trim();
+    const anonymous = document.getElementById('prayerAnonymous').checked;
+    const msgEl = document.getElementById('prayerFormMsg');
+    if (!message) { msgEl.style.color = '#a34a3c'; msgEl.textContent = 'Upišite svoju nakanu.'; return; }
+    try {
+      const res = await fetch('/api/prayers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message, anonymous }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Greška pri slanju.');
+      msgEl.style.color = 'var(--gold-dark)';
+      msgEl.textContent = data.message;
+      document.getElementById('prayerForm').reset();
+      document.getElementById('prayerAnonymous').checked = true;
+    } catch (err) {
+      msgEl.style.color = '#a34a3c';
+      msgEl.textContent = err.message;
+    }
+  });
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molite sa Marijom — Mjesto molitve, nade i svjetla</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <nav class="main-nav">
+      <a href="index.html" class="active">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <p class="hero-quote">"Dođite k meni svi koji ste izmoreni i opterećeni i ja ću vam odmor dati."</p>
+        <p class="hero-cite">– Matej 11,28</p>
+        <p class="hero-welcome">Dobrodošli u mjesto molitve, nade i svjetla. Ovdje nismo sami – Bog nas vidi, čuje i ljubi svakog od nas.</p>
+
+        <div class="hero-quicklinks">
+          <a href="sos-molitveni-zid.html" class="quicklink gold"><span class="ic">🤍</span> Trebate molitvu? (SOS)</a>
+          <a href="svjedocanstva.html" class="quicklink"><span class="ic">👥</span> Pročitajte svjedočanstva</a>
+          <a href="hodocasca.html" class="quicklink"><span class="ic">📍</span> Sljedeće hodočašće</a>
+        </div>
+      </div>
+
+      <div style="position: relative;">
+        <div class="ph hero-image"><span>Slika: žena u molitvi s krunicom, zlatno svjetlo u pozadini</span></div>
+        <div class="daily-thought">
+          <div class="tag">☀ Zraka svjetla u danu</div>
+          <blockquote>"Gospodin je pastir moj, ničeg mi ne nedostaje."</blockquote>
+          <p style="color:var(--muted); font-size:0.78rem; margin:0 0 12px;">– Psalam 23,1</p>
+          <a href="#dnevna-misao" class="btn btn-gold">Dnevna misao</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ZADNJE S BLOGA -->
+<section id="blog">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Zadnje s bloga</h2>
+        <div class="divider"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-3" id="homeBlogGrid">
+      <p style="color:var(--muted);">Učitavanje objava...</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function escHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+    fetch('/api/blog')
+      .then((r) => r.json())
+      .then((posts) => {
+        const grid = document.getElementById('homeBlogGrid');
+        const latest = posts.slice(0, 3);
+        if (!latest.length) {
+          grid.innerHTML = '<p style="color:var(--muted);">Uskoro prve objave.</p>';
+          return;
+        }
+        grid.innerHTML = latest.map((p) => `
+          <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+            <div class="ph" style="min-height:180px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>
+            <div class="card-body">
+              <h3>${escHtml(p.title)}</h3>
+              <p>${escHtml(p.excerpt || (p.content || '').slice(0, 100))}</p>
+              <span class="card-link">Pročitaj više →</span>
+            </div>
+          </a>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('homeBlogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
+      });
+  })();
+</script>
+
+<!-- FEATURE ICONS -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="grid grid-4">
+      <div class="feature">
+        <div class="icon">👥</div>
+        <h3>Svjedočanstva i knjige</h3>
+        <p>Pročitajte kako je Bog djelovao u životima drugih, upoznajte moj put s Isusom i isječke iz knjige koja nastaje.</p>
+        <a href="svjedocanstva.html" class="btn btn-outline">Više</a>
+      </div>
+      <div class="feature">
+        <div class="icon">✝</div>
+        <h3>SOS – Molitveni zid i duhovna pomoć</h3>
+        <p>Ostavite svoju nakanu i pridružite se molitvi. Niste sami.</p>
+        <a href="sos-molitveni-zid.html" class="btn btn-outline">Više</a>
+      </div>
+      <div class="feature">
+        <div class="icon">🖋</div>
+        <h3>Blog &amp; razmišljanja</h3>
+        <p>Dnevne misli, poticaji i odgovori na vaša pitanja iz života vjere.</p>
+        <a href="blog.html" class="btn btn-outline">Više</a>
+      </div>
+      <div class="feature">
+        <div class="icon">⛪</div>
+        <h3>Putujmo zajedno (hodočašća)</h3>
+        <p>Pridružite nam se na hodočašćima u sveta mjesta.</p>
+        <a href="hodocasca.html" class="btn btn-outline">Više</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICE IZ SVETISTA + MARIJA ODGOVARA -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="promo">
+      <div class="ph"><span>Slika: krunica, svijeće i otvorena bilježnica</span></div>
+      <div class="promo-text">
+        <h2>Marija odgovara na vaša pitanja</h2>
+        <p>Pošaljite svoje pitanje anonimno i pročitajte Marijine odgovore iz vjere i iskustva.</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="width:fit-content;">Postavi pitanje</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KAKO MOLITI / AUDIO / KUTAK ZA MLADE -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="ph" style="min-height:170px; border-radius:0;"><span>Slika: krunica na starim stranicama molitvenika</span></div>
+        <div class="card-body">
+          <h3>Kako moliti</h3>
+          <p>Pronađite molitve za svaku priliku, krunice, zazive i vodiče za početnike.</p>
+          <a href="kako-moliti.html" class="btn btn-outline">Istraži</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ph" style="min-height:170px; border-radius:0;"><span>Slike: slušalice i svijeća</span></div>
+        <div class="card-body">
+          <h3>Audio &amp; video meditacije</h3>
+          <p>Kratke molitvene meditacije i krunice za dušu – slušajte u hodu, u tišini, u srcu.</p>
+          <a href="audio-video-meditacije.html" class="btn btn-outline">Slušaj / gledaj</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ph" style="min-height:170px; border-radius:0;"><span>Slika: podignute ruke pri izlasku sunca</span></div>
+        <div class="card-body">
+          <h3>Kutak za mlade</h3>
+          <p>Iskrena vjera bez filtera za mlade koji traže istinu, mir i smisao.</p>
+          <a href="kutak-za-mlade.html" class="btn btn-outline">Više</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="YouTube">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

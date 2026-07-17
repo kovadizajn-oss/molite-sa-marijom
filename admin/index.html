@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prijava — Admin panel</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <h1>Molite sa Marijom</h1>
+      <p>Admin panel — prijava</p>
+      <form id="loginForm">
+        <input class="field" type="text" id="username" placeholder="Korisničko ime" autocomplete="username" required>
+        <input class="field" type="password" id="password" placeholder="Lozinka" autocomplete="current-password" required>
+        <button class="btn" type="submit">Prijavi se</button>
+      </form>
+      <p class="error-msg" id="errorMsg"></p>
+      <p class="hint">Prvi put? Korisničko ime: <strong>marija</strong>, lozinka: <strong>molitva123</strong> — obavezno je promijeni u Postavkama nakon prijave.</p>
+    </div>
+  </div>
+
+<script>
+  // Ako je već prijavljen, idi ravno na dashboard
+  fetch('/api/auth/session').then(r => r.json()).then(d => {
+    if (d.loggedIn) window.location.href = 'dashboard.html';
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = '';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errorMsg.textContent = data.error || 'Prijava nije uspjela.';
+        return;
+      }
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      errorMsg.textContent = 'Greška u povezivanju sa serverom.';
+    }
+  });
+</script>
+</body>
+</html>

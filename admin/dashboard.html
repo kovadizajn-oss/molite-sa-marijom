@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin panel — Molite sa Marijom</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h2>Molite sa Marijom</h2>
+    <nav>
+      <button class="tab-btn active" data-tab="blog">📖 Blog</button>
+      <button class="tab-btn" data-tab="hodocasca">⛪ Hodočašća</button>
+      <button class="tab-btn" data-tab="prayers">✝ Molitveni zid</button>
+      <button class="tab-btn" data-tab="testimonies">👥 Svjedočanstva</button>
+      <button class="tab-btn" data-tab="questions">💬 Pitanja</button>
+      <button class="tab-btn" data-tab="settings">⚙ Postavke</button>
+    </nav>
+    <div class="logout">
+      <button class="btn secondary small" id="logoutBtn">Odjava</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- BLOG -->
+    <section class="tab-panel active" id="tab-blog">
+      <h1>Blog objave</h1>
+      <p class="sub">Dodaj, uredi ili obriši objave koje se prikazuju na /blog.html</p>
+      <div class="panel">
+        <h3 id="blogFormTitle">Nova objava</h3>
+        <div id="blogMsg"></div>
+        <input type="hidden" id="blogId">
+        <div class="form-grid">
+          <div><label>Naslov</label><input class="field" id="blogTitle"></div>
+          <div><label>Kategorija</label><input class="field" id="blogCategory" placeholder="npr. Molitva"></div>
+          <div class="full"><label>Kratki opis (excerpt)</label><input class="field" id="blogExcerpt"></div>
+          <div class="full"><label>Sadržaj</label><textarea class="field" id="blogContent"></textarea></div>
+          <div class="full"><label>Opis slike (placeholder)</label><input class="field" id="blogImageNote" placeholder="npr. Slika: svijeća na stolu"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          <input type="checkbox" id="blogPublished" checked style="width:auto;"> Objavljeno (vidljivo na stranici)
+        </label>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn small" id="blogSaveBtn" style="width:auto;">Spremi</button>
+          <button class="btn secondary small" id="blogCancelBtn" style="width:auto;display:none;">Odustani</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Sve objave</h3></div>
+        <table id="blogTable"><thead><tr><th>Naslov</th><th>Kategorija</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="blogEmpty" style="display:none;">Nema objava.</div>
+      </div>
+    </section>
+
+    <!-- HODOCASCA -->
+    <section class="tab-panel" id="tab-hodocasca">
+      <h1>Hodočašća</h1>
+      <p class="sub">Dodaj, uredi ili obriši nadolazeća hodočašća prikazana na /hodocasca.html</p>
+      <div class="panel">
+        <h3 id="hodoFormTitle">Novo hodočašće</h3>
+        <div id="hodoMsg"></div>
+        <input type="hidden" id="hodoId">
+        <div class="form-grid">
+          <div><label>Naziv</label><input class="field" id="hodoTitle" placeholder="npr. Međugorje"></div>
+          <div><label>Lokacija</label><input class="field" id="hodoLocation" placeholder="npr. BiH"></div>
+          <div><label>Datumi</label><input class="field" id="hodoDate" placeholder="npr. 15.–20. rujna 2026."></div>
+          <div><label>Opis slike (placeholder)</label><input class="field" id="hodoImageNote"></div>
+          <div class="full"><label>Opis</label><textarea class="field" id="hodoDescription"></textarea></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          <input type="checkbox" id="hodoPublished" checked style="width:auto;"> Objavljeno
+        </label>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn small" id="hodoSaveBtn" style="width:auto;">Spremi</button>
+          <button class="btn secondary small" id="hodoCancelBtn" style="width:auto;display:none;">Odustani</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Sva hodočašća</h3></div>
+        <table id="hodoTable"><thead><tr><th>Naziv</th><th>Lokacija</th><th>Datumi</th><th>Status</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="hodoEmpty" style="display:none;">Nema hodočašća.</div>
+      </div>
+    </section>
+
+    <!-- PRAYERS -->
+    <section class="tab-panel" id="tab-prayers">
+      <h1>Molitveni zid — SOS nakane</h1>
+      <p class="sub">Pregledaj poslane nakane i odobri ih za prikaz na /sos-molitveni-zid.html</p>
+      <div class="panel">
+        <table id="prayersTable"><thead><tr><th>Ime</th><th>Nakana</th><th>Status</th><th>🙏</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="prayersEmpty" style="display:none;">Nema poslanih nakana.</div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIES -->
+    <section class="tab-panel" id="tab-testimonies">
+      <h1>Svjedočanstva</h1>
+      <p class="sub">Pregledaj poslana svjedočanstva i odobri ih za prikaz na /svjedocanstva.html</p>
+      <div class="panel">
+        <table id="testimoniesTable"><thead><tr><th>Ime</th><th>Email</th><th>Priča</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="testimoniesEmpty" style="display:none;">Nema poslanih svjedočanstava.</div>
+      </div>
+    </section>
+
+    <!-- QUESTIONS -->
+    <section class="tab-panel" id="tab-questions">
+      <h1>Pitanja — Marija odgovara</h1>
+      <p class="sub">Odgovori na pitanja i objavi ih na /marija-odgovara.html</p>
+      <div class="panel">
+        <table id="questionsTable"><thead><tr><th>Ime</th><th>Email</th><th>Pitanje</th><th>Odgovor</th><th>Status</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="questionsEmpty" style="display:none;">Nema pitanja.</div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="tab-panel" id="tab-settings">
+      <h1>Postavke</h1>
+      <p class="sub">Promjena lozinke za prijavu u admin panel</p>
+      <div class="panel" style="max-width:420px;">
+        <h3>Promijeni lozinku</h3>
+        <div id="pwMsg"></div>
+        <label>Trenutna lozinka</label>
+        <input class="field" type="password" id="currentPassword">
+        <label>Nova lozinka (min. 6 znakova)</label>
+        <input class="field" type="password" id="newPassword">
+        <button class="btn small" id="changePwBtn" style="width:auto;">Spremi lozinku</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
