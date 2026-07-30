@@ -2,7 +2,7 @@
    Molite sa Marijom — shared stylesheet
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600;1,700&family=Jost:wght@300;400;500;600&display=swap');
 
 :root{
   --cream: #f8f0e3;
@@ -268,6 +268,9 @@ section{ padding: 64px 0; }
   border-radius: var(--radius);
   padding: 30px 22px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .feature .icon{
   width: 54px; height: 54px;
@@ -279,7 +282,8 @@ section{ padding: 64px 0; }
   color: var(--gold-dark);
 }
 .feature h3{ font-size: 1.05rem; margin-bottom: 8px; }
-.feature p{ color: var(--brown-2); font-size: 0.88rem; margin-bottom: 18px; }
+.feature p{ color: var(--brown-2); font-size: 0.88rem; margin-bottom: 18px; flex-grow: 1; }
+.feature .btn{ align-self: center; margin-top: auto; }
 
 /* ---------------- Hero on homepage ---------------- */
 
@@ -298,12 +302,15 @@ section{ padding: 64px 0; }
 .hero-quote{
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
+  font-weight: 600;
   font-size: 2.1rem;
   color: var(--brown);
   line-height: 1.3;
+  max-width: 540px;
+  text-shadow: 0 1px 4px rgba(255,255,255,0.55), 0 0 22px rgba(255,255,255,0.4);
 }
-.hero-cite{ margin-top: 14px; color: var(--brown-2); font-size: 0.95rem; }
-.hero-welcome{ margin-top: 26px; color: var(--brown-2); max-width: 460px; }
+.hero-cite{ margin-top: 14px; color: var(--brown-2); font-size: 0.95rem; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
+.hero-welcome{ margin-top: 26px; color: var(--brown-2); max-width: 460px; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
 
 .hero-image{
   border-radius: var(--radius);
@@ -312,30 +319,45 @@ section{ padding: 64px 0; }
 
 .hero-quicklinks{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 36px;
+  grid-template-columns: max-content;
+  gap: 10px;
+  margin-top: 32px;
 }
 .quicklink{
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 16px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.82rem;
+  gap: 10px;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--brown);
   box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+.quicklink:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(74,54,38,0.2);
+  border-color: var(--gold);
 }
 .quicklink.gold{ background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #fff; }
-.quicklink .ic{ font-size: 1.2rem; }
+.quicklink.gold:hover{ filter: brightness(1.07); border-color: transparent; }
+.quicklink .ic{
+  font-size: 1rem;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--cream-2);
+}
+.quicklink.gold .ic{ background: rgba(255,255,255,0.28); }
 
 .daily-thought{
-  position: absolute;
-  top: 40px;
-  right: 32px;
   background: var(--paper);
   border-radius: var(--radius);
   padding: 20px 22px;
@@ -346,6 +368,49 @@ section{ padding: 64px 0; }
 .daily-thought .tag{ color: var(--gold-dark); font-weight: 500; margin-bottom: 8px; }
 .daily-thought blockquote{ font-family: 'Cormorant Garamond', serif; font-style: italic; margin: 0 0 10px; font-size: 1.05rem; color: var(--brown); }
 .daily-thought .btn{ margin-top: 6px; padding: 9px 18px; font-size: 0.68rem; }
+
+/* ---------------- Hero full-bleed background (naslovnica) ---------------- */
+
+.hero.hero-full{
+  padding: 0;
+  background: none;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+}
+.hero-bg-wrap{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-bg-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hero-scrim{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(248,240,227,0) 82%, rgba(248,240,227,0.95) 100%),
+    linear-gradient(90deg, rgba(248,240,227,0.92) 0%, rgba(248,240,227,0.62) 32%, rgba(248,240,227,0.08) 58%, rgba(248,240,227,0.08) 100%);
+}
+.hero.hero-full .container{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1520px;
+  padding: 64px 32px;
+}
+.hero.hero-full .hero-grid{
+  grid-template-columns: 1.4fr 0.6fr;
+  align-items: start;
+}
+.hero.hero-full .daily-thought{
+  justify-self: end;
+  align-self: center;
+}
 
 /* ---------------- Newsletter box ---------------- */
 
@@ -518,7 +583,9 @@ textarea.field{ resize: vertical; min-height: 120px; }
 
 @media (max-width: 980px){
   .hero-grid{ grid-template-columns: 1fr; }
-  .daily-thought{ position: static; margin-top: 24px; max-width: none; }
+  .daily-thought{ position: static; margin-top: 24px; max-width: none; justify-self: stretch; }
+  .hero.hero-full{ min-height: 0; }
+  .hero-scrim{ background: rgba(248,240,227,0.85); }
   .grid-5{ grid-template-columns: repeat(2, 1fr); }
   .grid-3{ grid-template-columns: repeat(2, 1fr); }
   .grid-4{ grid-template-columns: repeat(2, 1fr); }
@@ -530,7 +597,8 @@ textarea.field{ resize: vertical; min-height: 120px; }
 
 @media (max-width: 600px){
   .grid-5, .grid-3, .grid-4, .grid-2{ grid-template-columns: 1fr; }
-  .hero-quicklinks{ grid-template-columns: 1fr; }
+  .hero-quicklinks{ width: 100%; }
+  .quicklink{ width: 100%; }
   .footer-grid{ grid-template-columns: 1fr; }
   .page-hero h1{ font-size: 1.9rem; }
   .header-inner{ padding: 14px 20px; }

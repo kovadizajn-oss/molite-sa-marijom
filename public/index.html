@@ -25,10 +25,14 @@
 </header>
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero hero-full">
+  <div class="hero-bg-wrap">
+    <img src="images/hero-molitva.jpg" alt="Žena u molitvi s krunicom, zlatno svjetlo u pozadini" class="hero-bg-img">
+    <div class="hero-scrim"></div>
+  </div>
   <div class="container">
     <div class="hero-grid">
-      <div>
+      <div class="hero-text">
         <p class="hero-quote">"Dođite k meni svi koji ste izmoreni i opterećeni i ja ću vam odmor dati."</p>
         <p class="hero-cite">– Matej 11,28</p>
         <p class="hero-welcome">Dobrodošli u mjesto molitve, nade i svjetla. Ovdje nismo sami – Bog nas vidi, čuje i ljubi svakog od nas.</p>
@@ -40,18 +44,39 @@
         </div>
       </div>
 
-      <div style="position: relative;">
-        <div class="ph hero-image"><span>Slika: žena u molitvi s krunicom, zlatno svjetlo u pozadini</span></div>
-        <div class="daily-thought">
-          <div class="tag">☀ Zraka svjetla u danu</div>
-          <blockquote>"Gospodin je pastir moj, ničeg mi ne nedostaje."</blockquote>
-          <p style="color:var(--muted); font-size:0.78rem; margin:0 0 12px;">– Psalam 23,1</p>
-          <a href="#dnevna-misao" class="btn btn-gold">Dnevna misao</a>
-        </div>
+      <div class="daily-thought">
+        <div class="tag">☀ Zraka svjetla u danu</div>
+        <blockquote id="dtQuoteDisplay">"Gospodin je pastir moj, ničeg mi ne nedostaje."</blockquote>
+        <p id="dtSourceDisplay" style="color:var(--muted); font-size:0.78rem; margin:0 0 12px;">– Psalam 23,1</p>
+        <img id="dtImageDisplay" src="" alt="" style="width:100%; border-radius:10px; display:none;">
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  (function () {
+    fetch('/api/daily-thought')
+      .then((r) => {
+        if (!r.ok) throw new Error('none');
+        return r.json();
+      })
+      .then((t) => {
+        document.getElementById('dtQuoteDisplay').textContent = '"' + t.quote + '"';
+        document.getElementById('dtSourceDisplay').textContent = t.source ? '– ' + t.source : '';
+        const img = document.getElementById('dtImageDisplay');
+        if (t.image_url) {
+          img.src = t.image_url;
+          img.style.display = 'block';
+        } else {
+          img.style.display = 'none';
+        }
+      })
+      .catch(() => {
+        // nema objavljene misli dana — ostaje zadani tekst iz HTML-a
+      });
+  })();
+</script>
 
 <!-- ZADNJE S BLOGA -->
 <section id="blog">
@@ -85,7 +110,9 @@
         }
         grid.innerHTML = latest.map((p) => `
           <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
-            <div class="ph" style="min-height:180px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>
+            ${p.image_url
+              ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:180px; object-fit:cover; display:block;">`
+              : `<div class="ph" style="min-height:180px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
             <div class="card-body">
               <h3>${escHtml(p.title)}</h3>
               <p>${escHtml(p.excerpt || (p.content || '').slice(0, 100))}</p>
@@ -136,7 +163,7 @@
 <section style="padding-top:0;">
   <div class="container">
     <div class="promo">
-      <div class="ph"><span>Slika: krunica, svijeće i otvorena bilježnica</span></div>
+      <img src="images/marija-odgovara.jpg" alt="Krunica, svijeće i otvorena bilježnica" style="width:100%; height:100%; object-fit:cover; display:block;">
       <div class="promo-text">
         <h2>Marija odgovara na vaša pitanja</h2>
         <p>Pošaljite svoje pitanje anonimno i pročitajte Marijine odgovore iz vjere i iskustva.</p>
@@ -207,7 +234,7 @@
         <div class="footer-socials">
           <a href="#" aria-label="Facebook">f</a>
           <a href="#" aria-label="Instagram">◎</a>
-          <a href="#" aria-label="YouTube">▶</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
           <a href="#" aria-label="Email">✉</a>
         </div>
         <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>

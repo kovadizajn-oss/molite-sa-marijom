@@ -43,13 +43,28 @@
       <span class="tag">Zahvala</span>
     </div>
 
-    <div class="grid grid-3" id="testimoniesGrid">
+    <div class="section-head">
+      <div><h2>Svjedočanstva</h2><div class="divider"></div></div>
+    </div>
+    <div class="grid grid-3" id="adminTestimoniesGrid">
       <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
     </div>
   </div>
 </section>
 
 <section style="background:var(--cream-2);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Vaša svjedočanstva</h2><div class="divider"></div></div>
+      <p class="sub">Priče koje je zajednica podijelila s nama</p>
+    </div>
+    <div class="grid grid-3" id="testimoniesGrid">
+      <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
+    </div>
+  </div>
+</section>
+
+<section>
   <div class="container form-box" style="max-width:640px;">
     <h2 style="text-align:center;">Podijelite svoje svjedočanstvo</h2>
     <p style="text-align:center; color:var(--brown-2);">Vaša priča može biti upravo ono što netko drugi treba čuti danas.</p>
@@ -69,23 +84,41 @@
     fetch('/api/testimonies')
       .then((r) => r.json())
       .then((rows) => {
-        const grid = document.getElementById('testimoniesGrid');
-        if (!rows.length) {
-          grid.innerHTML = '<p style="color:var(--muted);">Još nema objavljenih svjedočanstava. Budite prvi koji će podijeliti svoje!</p>';
-          return;
-        }
-        grid.innerHTML = rows.map((r) => `
-          <div class="card">
-            <div class="ph" style="min-height:150px; border-radius:0;"><span>Fotografija svjedoka (opcionalno)</span></div>
+        const adminGrid = document.getElementById('adminTestimoniesGrid');
+        const userGrid = document.getElementById('testimoniesGrid');
+        const adminRows = rows.filter((r) => r.source === 'admin');
+        const userRows = rows.filter((r) => r.source !== 'admin');
+
+        function cardHtml(r, placeholderText) {
+          const showImageArea = r.source === 'admin';
+          return `
+          <a href="testimony.html?id=${r.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+            ${showImageArea
+              ? (r.image_url
+                  ? `<img src="${escHtml(r.image_url)}" alt="${escHtml(r.title || r.name || 'Svjedočanstvo')}" style="width:100%; height:150px; object-fit:cover; display:block;">`
+                  : `<div class="ph" style="min-height:150px; border-radius:0;"><span>${escHtml(placeholderText)}</span></div>`)
+              : ''}
             <div class="card-body">
-              <h3>${escHtml(r.name || 'Anonimno')}</h3>
+              <h3>${escHtml(r.title || r.name || 'Anonimno')}</h3>
+              ${r.title && r.name ? `<p style="color:var(--muted); font-size:0.8rem; margin-bottom:6px;">${escHtml(r.name)}</p>` : ''}
               <p>${escHtml(r.story)}</p>
+              <span class="card-link">Pročitaj više →</span>
             </div>
-          </div>
-        `).join('');
+          </a>
+        `;
+        }
+
+        adminGrid.innerHTML = adminRows.length
+          ? adminRows.map((r) => cardHtml(r, 'Fotografija uz svjedočanstvo (opcionalno)')).join('')
+          : '<p style="color:var(--muted);">Uskoro prva svjedočanstva.</p>';
+
+        userGrid.innerHTML = userRows.length
+          ? userRows.map((r) => cardHtml(r)).join('')
+          : '<p style="color:var(--muted);">Još nema objavljenih svjedočanstava. Budite prvi koji će podijeliti svoje!</p>';
       })
       .catch(() => {
-        document.getElementById('testimoniesGrid').innerHTML = '<p style="color:var(--muted);">Svjedočanstva se trenutno ne mogu učitati.</p>';
+        document.getElementById('adminTestimoniesGrid').innerHTML = '<p style="color:var(--muted);">Svjedočanstva se trenutno ne mogu učitati.</p>';
+        document.getElementById('testimoniesGrid').innerHTML = '';
       });
 
     document.getElementById('testimonyForm').addEventListener('submit', async (e) => {
@@ -141,7 +174,7 @@
         <div class="footer-socials">
           <a href="#" aria-label="Facebook">f</a>
           <a href="#" aria-label="Instagram">◎</a>
-          <a href="#" aria-label="YouTube">▶</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
           <a href="#" aria-label="Email">✉</a>
         </div>
         <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>

@@ -41,6 +41,63 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   window.location.href = 'index.html';
 });
 
+// --- Upload slike: šalje fajl na server, vraća javni URL ---
+async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Greška pri uploadu slike.');
+  return data.url;
+}
+
+// --- Prikaz/skrivanje preview slike u formi ---
+function setImagePreview(prefix, url) {
+  const wrap = document.getElementById(prefix + 'ImagePreviewWrap');
+  const img = document.getElementById(prefix + 'ImagePreview');
+  const hidden = document.getElementById(prefix + 'ImageUrl');
+  if (url) {
+    img.src = url;
+    wrap.style.display = '';
+    hidden.value = url;
+  } else {
+    img.src = '';
+    wrap.style.display = 'none';
+    hidden.value = '';
+  }
+}
+
+// ================= ANALYTICS =================
+function fmtStat(row) {
+  return { total: row ? row.total : 0, unique: row ? row.unique_visitors : 0 };
+}
+async function loadAnalytics() {
+  try {
+    const summary = await api('/api/admin/analytics/summary');
+    const s7 = fmtStat(summary.last7Days);
+    const s30 = fmtStat(summary.last30Days);
+    const sAll = fmtStat(summary.allTime);
+    document.getElementById('stat7Total').textContent = s7.total;
+    document.getElementById('stat7Unique').textContent = s7.unique + ' jedinstvenih posjetitelja';
+    document.getElementById('stat30Total').textContent = s30.total;
+    document.getElementById('stat30Unique').textContent = s30.unique + ' jedinstvenih posjetitelja';
+    document.getElementById('statAllTotal').textContent = sAll.total;
+    document.getElementById('statAllUnique').textContent = sAll.unique + ' jedinstvenih posjetitelja';
+
+    const pages = await api('/api/admin/analytics/pages');
+    const tbody = document.querySelector('#pagesTable tbody');
+    tbody.innerHTML = '';
+    document.getElementById('pagesEmpty').style.display = pages.length ? 'none' : 'block';
+    pages.forEach((p) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.tag ? `<span class="badge">${esc(p.tag)}</span>` : ''}</td><td>${esc(p.label)}</td><td>${p.views}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) {
+    // tiho — analitika ne smije rušiti ostatak panela
+  }
+}
+
 // ================= BLOG =================
 async function loadBlog() {
   const rows = await api('/api/admin/blog');
@@ -52,6 +109,7 @@ async function loadBlog() {
     tr.innerHTML = `
       <td>${esc(r.title)}</td>
       <td>${esc(r.category)}</td>
+      <td>${r.views || 0}</td>
       <td><span class="badge ${r.published ? 'published' : 'pending'}">${r.published ? 'objavljeno' : 'skriveno'}</span></td>
       <td>${fmtDate(r.created_at)}</td>
       <td class="actions">
@@ -74,6 +132,8 @@ window.editBlog = function (id) {
   document.getElementById('blogImageNote').value = r.image_note;
   document.getElementById('blogPublished').checked = !!r.published;
   document.getElementById('blogCancelBtn').style.display = 'inline-flex';
+  document.getElementById('blogImageFile').value = '';
+  setImagePreview('blog', r.image_url);
   window.scrollTo(0, 0);
 };
 document.getElementById('blogCancelBtn').addEventListener('click', () => resetBlogForm());
@@ -83,7 +143,26 @@ function resetBlogForm() {
   ['blogTitle','blogCategory','blogExcerpt','blogContent','blogImageNote'].forEach((id) => document.getElementById(id).value = '');
   document.getElementById('blogPublished').checked = true;
   document.getElementById('blogCancelBtn').style.display = 'none';
+  document.getElementById('blogImageFile').value = '';
+  setImagePreview('blog', '');
 }
+document.getElementById('blogImageFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('blogMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam sliku...</div>';
+    const url = await uploadImage(file);
+    setImagePreview('blog', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('blogImageRemoveBtn').addEventListener('click', () => {
+  document.getElementById('blogImageFile').value = '';
+  setImagePreview('blog', '');
+});
 document.getElementById('blogSaveBtn').addEventListener('click', async () => {
   const id = document.getElementById('blogId').value;
   const body = {
@@ -92,6 +171,7 @@ document.getElementById('blogSaveBtn').addEventListener('click', async () => {
     excerpt: document.getElementById('blogExcerpt').value.trim(),
     content: document.getElementById('blogContent').value.trim(),
     image_note: document.getElementById('blogImageNote').value.trim(),
+    image_url: document.getElementById('blogImageUrl').value,
     published: document.getElementById('blogPublished').checked,
   };
   const msg = document.getElementById('blogMsg');
@@ -146,6 +226,8 @@ window.editHodo = function (id) {
   document.getElementById('hodoDescription').value = r.description;
   document.getElementById('hodoPublished').checked = !!r.published;
   document.getElementById('hodoCancelBtn').style.display = 'inline-flex';
+  document.getElementById('hodoImageFile').value = '';
+  setImagePreview('hodo', r.image_url);
   window.scrollTo(0, 0);
 };
 document.getElementById('hodoCancelBtn').addEventListener('click', () => resetHodoForm());
@@ -155,7 +237,26 @@ function resetHodoForm() {
   ['hodoTitle','hodoLocation','hodoDate','hodoImageNote','hodoDescription'].forEach((id) => document.getElementById(id).value = '');
   document.getElementById('hodoPublished').checked = true;
   document.getElementById('hodoCancelBtn').style.display = 'none';
+  document.getElementById('hodoImageFile').value = '';
+  setImagePreview('hodo', '');
 }
+document.getElementById('hodoImageFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('hodoMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam sliku...</div>';
+    const url = await uploadImage(file);
+    setImagePreview('hodo', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('hodoImageRemoveBtn').addEventListener('click', () => {
+  document.getElementById('hodoImageFile').value = '';
+  setImagePreview('hodo', '');
+});
 document.getElementById('hodoSaveBtn').addEventListener('click', async () => {
   const id = document.getElementById('hodoId').value;
   const body = {
@@ -163,6 +264,7 @@ document.getElementById('hodoSaveBtn').addEventListener('click', async () => {
     location: document.getElementById('hodoLocation').value.trim(),
     date_range: document.getElementById('hodoDate').value.trim(),
     image_note: document.getElementById('hodoImageNote').value.trim(),
+    image_url: document.getElementById('hodoImageUrl').value,
     description: document.getElementById('hodoDescription').value.trim(),
     published: document.getElementById('hodoPublished').checked,
   };
@@ -225,19 +327,24 @@ async function loadTestimonies() {
   document.getElementById('testimoniesEmpty').style.display = rows.length ? 'none' : 'block';
   rows.forEach((r) => {
     const tr = document.createElement('tr');
+    const isAdmin = r.source === 'admin';
     tr.innerHTML = `
       <td>${esc(r.name || 'Anonimno')}</td>
       <td>${esc(r.email) || '—'}</td>
-      <td style="max-width:320px;">${esc(r.story)}</td>
+      <td>${esc(r.title) || '—'}</td>
+      <td style="max-width:280px;">${esc(r.story)}</td>
+      <td>${isAdmin ? 'Marija' : 'Korisnik'}</td>
       <td><span class="badge ${r.status}">${r.status}</span></td>
       <td>${fmtDate(r.created_at)}</td>
       <td class="actions">
-        ${r.status !== 'approved' ? `<button class="btn small" onclick="setTestimonyStatus(${r.id},'approved')">Odobri</button>` : ''}
-        ${r.status !== 'rejected' ? `<button class="btn secondary small" onclick="setTestimonyStatus(${r.id},'rejected')">Odbij</button>` : ''}
+        ${isAdmin ? `<button class="btn secondary small" onclick="editTestimony(${r.id})">Uredi</button>` : ''}
+        ${!isAdmin && r.status !== 'approved' ? `<button class="btn small" onclick="setTestimonyStatus(${r.id},'approved')">Odobri</button>` : ''}
+        ${!isAdmin && r.status !== 'rejected' ? `<button class="btn secondary small" onclick="setTestimonyStatus(${r.id},'rejected')">Odbij</button>` : ''}
         <button class="btn danger small" onclick="deleteTestimony(${r.id})">Obriši</button>
       </td>`;
     tbody.appendChild(tr);
   });
+  window._testimonyRows = rows;
 }
 window.setTestimonyStatus = async function (id, status) {
   await api('/api/admin/testimonies/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
@@ -248,6 +355,69 @@ window.deleteTestimony = async function (id) {
   await api('/api/admin/testimonies/' + id, { method: 'DELETE' });
   loadTestimonies();
 };
+window.editTestimony = function (id) {
+  const r = window._testimonyRows.find((x) => x.id === id);
+  if (!r) return;
+  document.getElementById('adminTestFormTitle').textContent = 'Uredi svjedočanstvo';
+  document.getElementById('adminTestId').value = r.id;
+  document.getElementById('adminTestName').value = r.name;
+  document.getElementById('adminTestTitle').value = r.title;
+  document.getElementById('adminTestStory').value = r.story;
+  document.getElementById('adminTestPublished').checked = r.status === 'approved';
+  document.getElementById('adminTestCancelBtn').style.display = 'inline-flex';
+  document.getElementById('adminTestImageFile').value = '';
+  setImagePreview('adminTest', r.image_url);
+  window.scrollTo(0, 0);
+};
+document.getElementById('adminTestCancelBtn').addEventListener('click', () => resetTestimonyForm());
+function resetTestimonyForm() {
+  document.getElementById('adminTestFormTitle').textContent = 'Novo svjedočanstvo';
+  document.getElementById('adminTestId').value = '';
+  ['adminTestName','adminTestTitle','adminTestStory'].forEach((id) => document.getElementById(id).value = '');
+  document.getElementById('adminTestPublished').checked = true;
+  document.getElementById('adminTestCancelBtn').style.display = 'none';
+  document.getElementById('adminTestImageFile').value = '';
+  setImagePreview('adminTest', '');
+}
+document.getElementById('adminTestImageFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('adminTestMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam sliku...</div>';
+    const url = await uploadImage(file);
+    setImagePreview('adminTest', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('adminTestImageRemoveBtn').addEventListener('click', () => {
+  document.getElementById('adminTestImageFile').value = '';
+  setImagePreview('adminTest', '');
+});
+document.getElementById('adminTestSaveBtn').addEventListener('click', async () => {
+  const id = document.getElementById('adminTestId').value;
+  const body = {
+    name: document.getElementById('adminTestName').value.trim(),
+    title: document.getElementById('adminTestTitle').value.trim(),
+    story: document.getElementById('adminTestStory').value.trim(),
+    image_url: document.getElementById('adminTestImageUrl').value,
+    published: document.getElementById('adminTestPublished').checked,
+  };
+  const msg = document.getElementById('adminTestMsg');
+  if (!body.story) { msg.innerHTML = '<div class="msg err">Priča je obavezna.</div>'; return; }
+  try {
+    if (id) await api('/api/admin/testimonies/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/api/admin/testimonies', { method: 'POST', body: JSON.stringify(body) });
+    msg.innerHTML = '<div class="msg ok">Spremljeno.</div>';
+    resetTestimonyForm();
+    loadTestimonies();
+    setTimeout(() => (msg.innerHTML = ''), 2500);
+  } catch (e) {
+    msg.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+});
 
 // ================= QUESTIONS =================
 async function loadQuestions() {
@@ -284,6 +454,94 @@ window.deleteQuestion = async function (id) {
   loadQuestions();
 };
 
+// ================= DAILY THOUGHT =================
+async function loadDailyThoughts() {
+  const rows = await api('/api/admin/daily-thoughts');
+  const tbody = document.querySelector('#dtTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('dtEmpty').style.display = rows.length ? 'none' : 'block';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="max-width:360px;">${esc(r.quote)}</td>
+      <td>${esc(r.source) || '—'}</td>
+      <td><span class="badge ${r.published ? 'published' : 'pending'}">${r.published ? 'objavljeno' : 'skriveno'}</span></td>
+      <td>${fmtDate(r.created_at)}</td>
+      <td class="actions">
+        <button class="btn secondary small" onclick="editDailyThought(${r.id})">Uredi</button>
+        <button class="btn danger small" onclick="deleteDailyThought(${r.id})">Obriši</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  window._dtRows = rows;
+}
+window.editDailyThought = function (id) {
+  const r = window._dtRows.find((x) => x.id === id);
+  if (!r) return;
+  document.getElementById('dtFormTitle').textContent = 'Uredi misao dana';
+  document.getElementById('dtId').value = r.id;
+  document.getElementById('dtQuote').value = r.quote;
+  document.getElementById('dtSource').value = r.source;
+  document.getElementById('dtPublished').checked = !!r.published;
+  document.getElementById('dtCancelBtn').style.display = 'inline-flex';
+  document.getElementById('dtImageFile').value = '';
+  setImagePreview('dt', r.image_url);
+  window.scrollTo(0, 0);
+};
+document.getElementById('dtCancelBtn').addEventListener('click', () => resetDailyThoughtForm());
+function resetDailyThoughtForm() {
+  document.getElementById('dtFormTitle').textContent = 'Nova misao dana';
+  document.getElementById('dtId').value = '';
+  ['dtQuote','dtSource'].forEach((id) => document.getElementById(id).value = '');
+  document.getElementById('dtPublished').checked = true;
+  document.getElementById('dtCancelBtn').style.display = 'none';
+  document.getElementById('dtImageFile').value = '';
+  setImagePreview('dt', '');
+}
+document.getElementById('dtImageFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('dtMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam sliku...</div>';
+    const url = await uploadImage(file);
+    setImagePreview('dt', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('dtImageRemoveBtn').addEventListener('click', () => {
+  document.getElementById('dtImageFile').value = '';
+  setImagePreview('dt', '');
+});
+document.getElementById('dtSaveBtn').addEventListener('click', async () => {
+  const id = document.getElementById('dtId').value;
+  const body = {
+    quote: document.getElementById('dtQuote').value.trim(),
+    source: document.getElementById('dtSource').value.trim(),
+    image_url: document.getElementById('dtImageUrl').value,
+    published: document.getElementById('dtPublished').checked,
+  };
+  const msg = document.getElementById('dtMsg');
+  if (!body.quote) { msg.innerHTML = '<div class="msg err">Misao je obavezna.</div>'; return; }
+  try {
+    if (id) await api('/api/admin/daily-thoughts/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/api/admin/daily-thoughts', { method: 'POST', body: JSON.stringify(body) });
+    msg.innerHTML = '<div class="msg ok">Spremljeno.</div>';
+    resetDailyThoughtForm();
+    loadDailyThoughts();
+    setTimeout(() => (msg.innerHTML = ''), 2500);
+  } catch (e) {
+    msg.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+});
+window.deleteDailyThought = async function (id) {
+  if (!confirm('Obrisati ovu misao dana?')) return;
+  await api('/api/admin/daily-thoughts/' + id, { method: 'DELETE' });
+  loadDailyThoughts();
+};
+
 // ================= SETTINGS =================
 document.getElementById('changePwBtn').addEventListener('click', async () => {
   const currentPassword = document.getElementById('currentPassword').value;
@@ -300,8 +558,10 @@ document.getElementById('changePwBtn').addEventListener('click', async () => {
 });
 
 // --- init ---
+loadAnalytics();
 loadBlog();
 loadHodo();
 loadPrayers();
 loadTestimonies();
 loadQuestions();
+loadDailyThoughts();

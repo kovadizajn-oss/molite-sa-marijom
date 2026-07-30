@@ -69,7 +69,9 @@
       }
       grid.innerHTML = posts.map((p) => `
         <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
-          <div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>
+          ${p.image_url
+            ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
+            : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
           <div class="card-body">
             <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
             <h3>${escHtml(p.title)}</h3>
@@ -111,7 +113,7 @@
         <div class="footer-socials">
           <a href="#" aria-label="Facebook">f</a>
           <a href="#" aria-label="Instagram">◎</a>
-          <a href="#" aria-label="YouTube">▶</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
           <a href="#" aria-label="Email">✉</a>
         </div>
         <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>

@@ -11,11 +11,13 @@
   <aside class="sidebar">
     <h2>Molite sa Marijom</h2>
     <nav>
+      <button class="tab-btn" data-tab="analytics">📊 Analitika</button>
       <button class="tab-btn active" data-tab="blog">📖 Blog</button>
       <button class="tab-btn" data-tab="hodocasca">⛪ Hodočašća</button>
       <button class="tab-btn" data-tab="prayers">✝ Molitveni zid</button>
       <button class="tab-btn" data-tab="testimonies">👥 Svjedočanstva</button>
       <button class="tab-btn" data-tab="questions">💬 Pitanja</button>
+      <button class="tab-btn" data-tab="daily-thought">☀ Misao dana</button>
       <button class="tab-btn" data-tab="settings">⚙ Postavke</button>
     </nav>
     <div class="logout">
@@ -24,6 +26,37 @@
   </aside>
 
   <main class="main">
+
+    <!-- ANALYTICS -->
+    <section class="tab-panel" id="tab-analytics">
+      <h1>Analitika</h1>
+      <p class="sub">Jednostavno brojanje posjeta stranica (bez kolačića, IP adrese se ne spremaju u čitljivom obliku).</p>
+      <div class="panel">
+        <h3>Pregledi stranica</h3>
+        <div class="stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:14px;">
+          <div class="stat-box" style="border:1px solid var(--line, #e4d3b6); border-radius:10px; padding:16px;">
+            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted, #8a7660);">Zadnjih 7 dana</div>
+            <div style="font-size:1.8rem; font-weight:600; margin-top:6px;" id="stat7Total">—</div>
+            <div style="font-size:0.8rem; color:var(--muted, #8a7660);" id="stat7Unique">—</div>
+          </div>
+          <div class="stat-box" style="border:1px solid var(--line, #e4d3b6); border-radius:10px; padding:16px;">
+            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted, #8a7660);">Zadnjih 30 dana</div>
+            <div style="font-size:1.8rem; font-weight:600; margin-top:6px;" id="stat30Total">—</div>
+            <div style="font-size:0.8rem; color:var(--muted, #8a7660);" id="stat30Unique">—</div>
+          </div>
+          <div class="stat-box" style="border:1px solid var(--line, #e4d3b6); border-radius:10px; padding:16px;">
+            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted, #8a7660);">Od početka</div>
+            <div style="font-size:1.8rem; font-weight:600; margin-top:6px;" id="statAllTotal">—</div>
+            <div style="font-size:0.8rem; color:var(--muted, #8a7660);" id="statAllUnique">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Najposjećenije stranice (zadnjih 30 dana)</h3></div>
+        <table id="pagesTable"><thead><tr><th>Vrsta</th><th>Stranica</th><th>Pregledi</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="pagesEmpty" style="display:none;">Još nema podataka o posjetama.</div>
+      </div>
+    </section>
 
     <!-- BLOG -->
     <section class="tab-panel active" id="tab-blog">
@@ -38,7 +71,16 @@
           <div><label>Kategorija</label><input class="field" id="blogCategory" placeholder="npr. Molitva"></div>
           <div class="full"><label>Kratki opis (excerpt)</label><input class="field" id="blogExcerpt"></div>
           <div class="full"><label>Sadržaj</label><textarea class="field" id="blogContent"></textarea></div>
-          <div class="full"><label>Opis slike (placeholder)</label><input class="field" id="blogImageNote" placeholder="npr. Slika: svijeća na stolu"></div>
+          <div class="full">
+            <label>Slika objave</label>
+            <input class="field" type="file" id="blogImageFile" accept="image/*">
+            <div id="blogImagePreviewWrap" style="margin-top:8px; display:none;">
+              <img id="blogImagePreview" src="" alt="" style="max-width:220px; max-height:140px; border-radius:6px; display:block;">
+              <button type="button" class="btn secondary small" id="blogImageRemoveBtn" style="margin-top:6px; width:auto;">Ukloni sliku</button>
+            </div>
+            <input type="hidden" id="blogImageUrl">
+          </div>
+          <div class="full"><label>Opis slike (alt tekst / placeholder ako nema uploadane slike)</label><input class="field" id="blogImageNote" placeholder="npr. Slika: svijeća na stolu"></div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
           <input type="checkbox" id="blogPublished" checked style="width:auto;"> Objavljeno (vidljivo na stranici)
@@ -50,7 +92,7 @@
       </div>
       <div class="panel">
         <div class="toolbar"><h3>Sve objave</h3></div>
-        <table id="blogTable"><thead><tr><th>Naslov</th><th>Kategorija</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <table id="blogTable"><thead><tr><th>Naslov</th><th>Kategorija</th><th>Pregledi</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
         <div class="empty" id="blogEmpty" style="display:none;">Nema objava.</div>
       </div>
     </section>
@@ -67,7 +109,16 @@
           <div><label>Naziv</label><input class="field" id="hodoTitle" placeholder="npr. Međugorje"></div>
           <div><label>Lokacija</label><input class="field" id="hodoLocation" placeholder="npr. BiH"></div>
           <div><label>Datumi</label><input class="field" id="hodoDate" placeholder="npr. 15.–20. rujna 2026."></div>
-          <div><label>Opis slike (placeholder)</label><input class="field" id="hodoImageNote"></div>
+          <div class="full">
+            <label>Slika hodočašća</label>
+            <input class="field" type="file" id="hodoImageFile" accept="image/*">
+            <div id="hodoImagePreviewWrap" style="margin-top:8px; display:none;">
+              <img id="hodoImagePreview" src="" alt="" style="max-width:220px; max-height:140px; border-radius:6px; display:block;">
+              <button type="button" class="btn secondary small" id="hodoImageRemoveBtn" style="margin-top:6px; width:auto;">Ukloni sliku</button>
+            </div>
+            <input type="hidden" id="hodoImageUrl">
+          </div>
+          <div class="full"><label>Opis slike (alt tekst / placeholder ako nema uploadane slike)</label><input class="field" id="hodoImageNote"></div>
           <div class="full"><label>Opis</label><textarea class="field" id="hodoDescription"></textarea></div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
@@ -98,10 +149,37 @@
     <!-- TESTIMONIES -->
     <section class="tab-panel" id="tab-testimonies">
       <h1>Svjedočanstva</h1>
-      <p class="sub">Pregledaj poslana svjedočanstva i odobri ih za prikaz na /svjedocanstva.html</p>
+      <p class="sub">Upiši vlastita svjedočanstva (i ona preuzeta odrugdje) te pregledaj i odobri svjedočanstva koja šalju korisnici. Sve se prikazuje na /svjedocanstva.html</p>
       <div class="panel">
-        <table id="testimoniesTable"><thead><tr><th>Ime</th><th>Email</th><th>Priča</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
-        <div class="empty" id="testimoniesEmpty" style="display:none;">Nema poslanih svjedočanstava.</div>
+        <h3 id="adminTestFormTitle">Novo svjedočanstvo</h3>
+        <div id="adminTestMsg"></div>
+        <input type="hidden" id="adminTestId">
+        <div class="form-grid">
+          <div><label>Ime (čije je svjedočanstvo)</label><input class="field" id="adminTestName" placeholder="npr. Marija, ili Ana K."></div>
+          <div><label>Naslov (opcionalno)</label><input class="field" id="adminTestTitle" placeholder="npr. Ozdravljenje nakon operacije"></div>
+          <div class="full">
+            <label>Slika (opcionalno)</label>
+            <input class="field" type="file" id="adminTestImageFile" accept="image/*">
+            <div id="adminTestImagePreviewWrap" style="margin-top:8px; display:none;">
+              <img id="adminTestImagePreview" src="" alt="" style="max-width:220px; max-height:140px; border-radius:6px; display:block;">
+              <button type="button" class="btn secondary small" id="adminTestImageRemoveBtn" style="margin-top:6px; width:auto;">Ukloni sliku</button>
+            </div>
+            <input type="hidden" id="adminTestImageUrl">
+          </div>
+          <div class="full"><label>Priča</label><textarea class="field" id="adminTestStory"></textarea></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          <input type="checkbox" id="adminTestPublished" checked style="width:auto;"> Objavljeno (vidljivo na stranici)
+        </label>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn small" id="adminTestSaveBtn" style="width:auto;">Spremi</button>
+          <button class="btn secondary small" id="adminTestCancelBtn" style="width:auto;display:none;">Odustani</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Sva svjedočanstva</h3></div>
+        <table id="testimoniesTable"><thead><tr><th>Ime</th><th>Email</th><th>Naslov</th><th>Priča</th><th>Izvor</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="testimoniesEmpty" style="display:none;">Nema svjedočanstava.</div>
       </div>
     </section>
 
@@ -112,6 +190,42 @@
       <div class="panel">
         <table id="questionsTable"><thead><tr><th>Ime</th><th>Email</th><th>Pitanje</th><th>Odgovor</th><th>Status</th><th>Radnje</th></tr></thead><tbody></tbody></table>
         <div class="empty" id="questionsEmpty" style="display:none;">Nema pitanja.</div>
+      </div>
+    </section>
+
+    <!-- DAILY THOUGHT -->
+    <section class="tab-panel" id="tab-daily-thought">
+      <h1>Misao dana</h1>
+      <p class="sub">Objavi misao/citat koji se prikazuje u kućici "Dnevna misao" na naslovnici. Prikazuje se uvijek najnovija objavljena.</p>
+      <div class="panel">
+        <h3 id="dtFormTitle">Nova misao dana</h3>
+        <div id="dtMsg"></div>
+        <input type="hidden" id="dtId">
+        <div class="form-grid">
+          <div class="full"><label>Misao / citat</label><textarea class="field" id="dtQuote" placeholder="npr. Gospodin je pastir moj, ničeg mi ne nedostaje."></textarea></div>
+          <div><label>Izvor (opcionalno)</label><input class="field" id="dtSource" placeholder="npr. Psalam 23,1"></div>
+          <div class="full">
+            <label>Slika u kućici (opcionalno)</label>
+            <input class="field" type="file" id="dtImageFile" accept="image/*">
+            <div id="dtImagePreviewWrap" style="margin-top:8px; display:none;">
+              <img id="dtImagePreview" src="" alt="" style="max-width:220px; max-height:140px; border-radius:6px; display:block;">
+              <button type="button" class="btn secondary small" id="dtImageRemoveBtn" style="margin-top:6px; width:auto;">Ukloni sliku</button>
+            </div>
+            <input type="hidden" id="dtImageUrl">
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          <input type="checkbox" id="dtPublished" checked style="width:auto;"> Objavljeno
+        </label>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn small" id="dtSaveBtn" style="width:auto;">Spremi</button>
+          <button class="btn secondary small" id="dtCancelBtn" style="width:auto;display:none;">Odustani</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Sve misli dana</h3></div>
+        <table id="dtTable"><thead><tr><th>Misao</th><th>Izvor</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="dtEmpty" style="display:none;">Nema unesenih misli dana.</div>
       </div>
     </section>
 

@@ -57,7 +57,9 @@
       }
       grid.innerHTML = rows.map((r) => `
         <div class="card">
-          <div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(r.image_note || 'Slika hodočašća')}</span></div>
+          ${r.image_url
+            ? `<img src="${escHtml(r.image_url)}" alt="${escHtml(r.image_note || r.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
+            : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(r.image_note || 'Slika hodočašća')}</span></div>`}
           <div class="card-body">
             <p style="color:var(--gold-dark); font-size:0.78rem; font-weight:500;">${escHtml(r.date_range)}</p>
             <h3>${escHtml(r.title)}${r.location ? ', ' + escHtml(r.location) : ''}</h3>
@@ -72,20 +74,6 @@
 </script>
 
 <section style="background:var(--cream-2);">
-  <div class="container">
-    <div class="section-head">
-      <div><h2>Sjećanja s prošlih putovanja</h2><div class="divider"></div></div>
-    </div>
-    <div class="grid grid-4">
-      <div class="ph" style="min-height:150px;"><span>Foto: skupina hodočasnika</span></div>
-      <div class="ph" style="min-height:150px;"><span>Foto: molitva pod otvorenim nebom</span></div>
-      <div class="ph" style="min-height:150px;"><span>Foto: sveta misa na putovanju</span></div>
-      <div class="ph" style="min-height:150px;"><span>Foto: zajednički trenutak zajednice</span></div>
-    </div>
-  </div>
-</section>
-
-<section>
   <div class="container" style="max-width:760px;">
     <div class="section-head">
       <div><h2>Česta pitanja</h2><div class="divider"></div></div>
@@ -132,7 +120,7 @@
         <div class="footer-socials">
           <a href="#" aria-label="Facebook">f</a>
           <a href="#" aria-label="Instagram">◎</a>
-          <a href="#" aria-label="YouTube">▶</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
           <a href="#" aria-label="Email">✉</a>
         </div>
         <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Objava — Molite sa Marijom</title>
+<title>Svjedočanstvo — Molite sa Marijom</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,9 +14,9 @@
     <nav class="main-nav">
       <a href="index.html">Početna</a>
       <a href="o-meni.html">O meni</a>
-      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="svjedocanstva.html" class="active">Svjedočanstva i knjige</a>
       <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
-      <a href="blog.html" class="active">Blog</a>
+      <a href="blog.html">Blog</a>
       <a href="hodocasca.html">Hodočašća</a>
       <a href="kako-moliti.html">Kako moliti</a>
       <a href="marija-odgovara.html">Marija odgovara</a>
@@ -24,34 +24,34 @@
   </div>
 </header>
 
-<section class="page-hero" id="postHero" style="display:none;">
+<section class="page-hero" id="testHero" style="display:none;">
   <div class="container">
-    <h1 id="postTitle"></h1>
-    <p class="lead" id="postMeta"></p>
+    <h1 id="testTitle"></h1>
+    <p class="lead" id="testMeta"></p>
   </div>
 </section>
 
-<section id="postLoading">
+<section id="testLoading">
   <div class="container" style="text-align:center; padding:40px 0;">
-    <p style="color:var(--muted);">Učitavanje objave...</p>
+    <p style="color:var(--muted);">Učitavanje svjedočanstva...</p>
   </div>
 </section>
 
-<section id="postBody" style="display:none;">
+<section id="testBody" style="display:none;">
   <div class="container" style="max-width:760px;">
-    <div id="postImage" style="margin-bottom:32px;"></div>
-    <div id="postContent" style="font-size:1.05rem; line-height:1.9; color:var(--ink);"></div>
+    <div id="testImage" style="margin-bottom:32px;"></div>
+    <div id="testContent" style="font-size:1.05rem; line-height:1.9; color:var(--ink);"></div>
     <div style="margin-top:40px;">
-      <a href="blog.html" class="btn btn-outline">← Natrag na blog</a>
+      <a href="svjedocanstva.html" class="btn btn-outline">← Natrag na svjedočanstva</a>
     </div>
   </div>
 </section>
 
-<section id="postNotFound" style="display:none;">
+<section id="testNotFound" style="display:none;">
   <div class="container" style="text-align:center; padding:40px 0;">
-    <h2>Objava nije pronađena</h2>
-    <p style="color:var(--muted); margin-bottom:24px;">Možda je uklonjena ili link nije ispravan.</p>
-    <a href="blog.html" class="btn btn-gold">Natrag na blog</a>
+    <h2>Svjedočanstvo nije pronađeno</h2>
+    <p style="color:var(--muted); margin-bottom:24px;">Možda je uklonjeno ili link nije ispravan.</p>
+    <a href="svjedocanstva.html" class="btn btn-gold">Natrag na svjedočanstva</a>
   </div>
 </section>
 
@@ -70,31 +70,34 @@
   const id = params.get('id');
 
   if (!id) {
-    document.getElementById('postLoading').style.display = 'none';
-    document.getElementById('postNotFound').style.display = '';
+    document.getElementById('testLoading').style.display = 'none';
+    document.getElementById('testNotFound').style.display = '';
   } else {
-    fetch('/api/blog/' + id)
+    fetch('/api/testimonies/' + id)
       .then((r) => {
         if (!r.ok) throw new Error('not found');
         return r.json();
       })
-      .then((p) => {
-        document.title = p.title + ' — Molite sa Marijom';
-        document.getElementById('postTitle').textContent = p.title;
-        document.getElementById('postMeta').textContent = [fmtDate(p.created_at), p.category].filter(Boolean).join(' · ');
-        document.getElementById('postImage').innerHTML = p.image_url
-          ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; max-height:420px; object-fit:cover; border-radius:8px; display:block;">`
-          : `<div class="ph" style="min-height:260px;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`;
-        const paragraphs = (p.content || p.excerpt || '').split(/\n+/).filter(Boolean);
-        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
+      .then((t) => {
+        const heading = t.title || t.name || 'Svjedočanstvo';
+        document.title = heading + ' — Molite sa Marijom';
+        document.getElementById('testTitle').textContent = heading;
+        document.getElementById('testMeta').textContent = [fmtDate(t.created_at), t.title && t.name ? t.name : null].filter(Boolean).join(' · ');
+        document.getElementById('testImage').innerHTML = t.source === 'admin'
+          ? (t.image_url
+              ? `<img src="${escHtml(t.image_url)}" alt="${escHtml(heading)}" style="width:100%; max-height:420px; object-fit:cover; border-radius:8px; display:block;">`
+              : `<div class="ph" style="min-height:260px;"><span>Fotografija uz svjedočanstvo</span></div>`)
+          : '';
+        const paragraphs = (t.story || '').split(/\n+/).filter(Boolean);
+        document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
 
-        document.getElementById('postLoading').style.display = 'none';
-        document.getElementById('postHero').style.display = '';
-        document.getElementById('postBody').style.display = '';
+        document.getElementById('testLoading').style.display = 'none';
+        document.getElementById('testHero').style.display = '';
+        document.getElementById('testBody').style.display = '';
       })
       .catch(() => {
-        document.getElementById('postLoading').style.display = 'none';
-        document.getElementById('postNotFound').style.display = '';
+        document.getElementById('testLoading').style.display = 'none';
+        document.getElementById('testNotFound').style.display = '';
       });
   }
 </script>

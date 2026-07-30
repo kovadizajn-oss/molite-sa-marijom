@@ -48,27 +48,47 @@
 <section style="background:var(--cream-2);">
   <div class="container">
     <div class="section-head">
-      <div><h2>Teme koje mladi najviše pitaju</h2><div class="divider"></div></div>
+      <div><h2>Za razmišljanje danas</h2><div class="divider"></div></div>
+      <p class="sub">Najnovije objave s bloga</p>
     </div>
-    <div class="grid grid-3">
-      <div class="card"><div class="card-body">
-        <h3>Vjera i veze</h3>
-        <p>Kako graditi zdrave odnose koji poštuju sebe i drugog.</p>
-        <a href="#" class="card-link">Pročitaj →</a>
-      </div></div>
-      <div class="card"><div class="card-body">
-        <h3>Kad te anksioznost preplavi</h3>
-        <p>Molitva i praktični koraci kad um ne staje.</p>
-        <a href="#" class="card-link">Pročitaj →</a>
-      </div></div>
-      <div class="card"><div class="card-body">
-        <h3>Tko sam ja bez mreža?</h3>
-        <p>Pronalaženje identiteta izvan lajkova i usporedbi.</p>
-        <a href="#" class="card-link">Pročitaj →</a>
-      </div></div>
+    <div class="grid grid-3" id="youthBlogGrid">
+      <p style="color:var(--muted);">Učitavanje objava...</p>
     </div>
   </div>
 </section>
+
+<script>
+  (function () {
+    function escHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+    fetch('/api/blog')
+      .then((r) => r.json())
+      .then((posts) => {
+        const grid = document.getElementById('youthBlogGrid');
+        const latest = posts.slice(0, 3);
+        if (!latest.length) {
+          grid.innerHTML = '<p style="color:var(--muted);">Uskoro prve objave.</p>';
+          return;
+        }
+        grid.innerHTML = latest.map((p) => `
+          <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+            ${p.image_url
+              ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
+              : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
+            <div class="card-body">
+              <h3>${escHtml(p.title)}</h3>
+              <p>${escHtml(p.excerpt || (p.content || '').slice(0, 100))}</p>
+              <span class="card-link">Pročitaj →</span>
+            </div>
+          </a>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('youthBlogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
+      });
+  })();
+</script>
 
 <section>
   <div class="container" style="text-align:center;">
@@ -107,7 +127,7 @@
         <div class="footer-socials">
           <a href="#" aria-label="Facebook">f</a>
           <a href="#" aria-label="Instagram">◎</a>
-          <a href="#" aria-label="YouTube">▶</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
           <a href="#" aria-label="Email">✉</a>
         </div>
         <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
