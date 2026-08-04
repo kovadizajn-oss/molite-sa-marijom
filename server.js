@@ -44,16 +44,30 @@ app.use('/api', uploadRoutes);
 app.use('/api', dailyThoughtRoutes);
 app.use('/api', analyticsRoutes);
 
-// --- Jednostavno brojanje posjeta javnih stranica (bez cookieja, hashirana IP adresa) ---
+// --- Jednostavno brojanje posjeta javnih stranica ---
+// Jedinstveni posjetitelj prati se anonimnim kolačićem (nasumičan id, bez IP adrese,
+// bez osobnih podataka, ne dijeli se ni s kim) — puno pouzdanije od stare IP-only metode,
+// koja je preko mobilnog interneta lako brojala istu osobu kao više "jedinstvenih" posjetitelja.
+const VISITOR_COOKIE = 'vid';
+const VISITOR_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 dana
+
 app.use(async (req, res, next) => {
   const isPageRequest = req.method === 'GET' && (req.path === '/' || req.path.endsWith('.html'));
   const isAdminOrApi = req.path.startsWith('/admin') || req.path.startsWith('/api');
   if (isPageRequest && !isAdminOrApi) {
     try {
-      const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
-      const visitorHash = crypto.createHash('sha256').update(ip).digest('hex');
+      let visitorId = req.cookies && req.cookies[VISITOR_COOKIE];
+      if (!visitorId) {
+        visitorId = crypto.randomBytes(16).toString('hex');
+        res.cookie(VISITOR_COOKIE, visitorId, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: VISITOR_COOKIE_MAX_AGE,
+        });
+      }
       // Spremamo cijeli URL (s query stringom) da razlikujemo npr. post.html?id=1 od post.html?id=2
-      await db.query('INSERT INTO page_views (path, visitor_hash) VALUES ($1, $2)', [req.originalUrl, visitorHash]);
+      await db.query('INSERT INTO page_views (path, visitor_hash) VALUES ($1, $2)', [req.originalUrl, visitorId]);
     } catch {
       // brojanje posjeta ne smije nikad srušiti stranicu
     }
