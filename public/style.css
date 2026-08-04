@@ -602,6 +602,8 @@ textarea.field{ resize: vertical; min-height: 120px; }
   .hero-grid{ grid-template-columns: 1fr; }
   .daily-thought{ position: static; margin-top: 24px; max-width: none; justify-self: stretch; }
   .hero.hero-full{ min-height: 0; }
+  .hero.hero-full .hero-grid{ grid-template-columns: 1fr; }
+  .hero.hero-full .daily-thought{ justify-self: stretch; align-self: auto; }
   .hero-scrim{ background: rgba(248,240,227,0.85); }
   .grid-5{ grid-template-columns: repeat(2, 1fr); }
   .grid-3{ grid-template-columns: repeat(2, 1fr); }
