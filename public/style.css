@@ -612,9 +612,10 @@ textarea.field{ resize: vertical; min-height: 120px; }
   .footer-grid{ grid-template-columns: 1fr 1fr; }
   .promo{ grid-template-columns: 1fr; }
   .two-col{ grid-template-columns: 1fr; }
-  .nav-toggle{ display: flex; }
+  .nav-toggle{ display: flex; transition: transform 0.25s ease; }
+  .nav-toggle[aria-expanded="true"]{ transform: rotate(90deg); }
   .main-nav{
-    display: none;
+    display: flex;
     position: absolute;
     top: 100%;
     left: 0;
@@ -624,9 +625,21 @@ textarea.field{ resize: vertical; min-height: 120px; }
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 0;
+    padding: 0 32px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: max-height 0.32s ease, opacity 0.22s ease, transform 0.22s ease, padding 0.32s ease;
+  }
+  .main-nav.open{
+    max-height: 600px;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
     padding: 6px 32px 18px;
   }
-  .main-nav.open{ display: flex; }
   .main-nav a{ padding: 12px 0; border-bottom: 1px solid var(--cream-2); }
 }
 
