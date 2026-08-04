@@ -50,7 +50,8 @@
 <header class="site-header">
   <div class="header-inner">
     <a href="index.html" class="logo">MOLITE S<span>Marijom</span></a>
-    <nav class="main-nav">
+    <button class="nav-toggle" id="navToggle" aria-label="Izbornik" aria-expanded="false">☰</button>
+    <nav class="main-nav" id="mainNav">
       <a href="index.html">Početna</a>
       <a href="o-meni.html">O meni</a>
       <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
@@ -62,6 +63,23 @@
     </nav>
   </div>
 </header>
+<script>
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mainNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var isOpen = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    nav.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+</script>
 
 <section class="page-hero">
   <div class="container">
