@@ -101,6 +101,9 @@
     <div class="grid grid-3" id="homeBlogGrid">
       <p style="color:var(--muted);">Učitavanje objava...</p>
     </div>
+    <div id="homeBlogMore" style="display:none; text-align:center; margin-top:36px;">
+      <a href="blog.html" class="btn btn-outline">Vidi sve blogove →</a>
+    </div>
   </div>
 </section>
 
@@ -130,6 +133,9 @@
             </div>
           </a>
         `).join('');
+        if (posts.length > 3) {
+          document.getElementById('homeBlogMore').style.display = 'block';
+        }
       })
       .catch(() => {
         document.getElementById('homeBlogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
