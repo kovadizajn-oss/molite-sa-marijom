@@ -64,6 +64,18 @@
 <section style="background:var(--cream-2);">
   <div class="container">
     <div class="section-head">
+      <div><h2>Knjige</h2><div class="divider"></div></div>
+      <p class="sub">Kliknite na knjigu da je otvorite kao PDF</p>
+    </div>
+    <div class="grid grid-3" id="booksGrid">
+      <p style="color:var(--muted);">Učitavanje knjiga...</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
       <div><h2>Vaša svjedočanstva</h2><div class="divider"></div></div>
       <p class="sub">Priče koje je zajednica podijelila s nama</p>
     </div>
@@ -98,6 +110,12 @@
         const adminRows = rows.filter((r) => r.source === 'admin');
         const userRows = rows.filter((r) => r.source !== 'admin');
 
+        function truncate(s, max) {
+          const str = String(s || '');
+          if (str.length <= max) return str;
+          return str.slice(0, max).replace(/\s+\S*$/, '') + '…';
+        }
+
         function cardHtml(r, placeholderText) {
           const showImageArea = r.source === 'admin';
           return `
@@ -110,8 +128,8 @@
             <div class="card-body">
               <h3>${escHtml(r.title || r.name || 'Anonimno')}</h3>
               ${r.title && r.name ? `<p style="color:var(--muted); font-size:0.8rem; margin-bottom:6px;">${escHtml(r.name)}</p>` : ''}
-              <p>${escHtml(r.story)}</p>
-              <span class="card-link">Pročitaj više →</span>
+              <p>${escHtml(truncate(r.story, 160))}</p>
+              <span class="card-link">Pročitaj svjedočanstvo →</span>
             </div>
           </a>
         `;
@@ -128,6 +146,32 @@
       .catch(() => {
         document.getElementById('adminTestimoniesGrid').innerHTML = '<p style="color:var(--muted);">Svjedočanstva se trenutno ne mogu učitati.</p>';
         document.getElementById('testimoniesGrid').innerHTML = '';
+      });
+
+    fetch('/api/books')
+      .then((r) => r.json())
+      .then((rows) => {
+        const grid = document.getElementById('booksGrid');
+        if (!rows.length) {
+          grid.innerHTML = '<p style="color:var(--muted);">Uskoro prve knjige.</p>';
+          return;
+        }
+        grid.innerHTML = rows.map((b) => `
+          <a href="${escHtml(b.pdf_url)}" target="_blank" rel="noopener" class="card" style="text-decoration:none; color:inherit; display:block;">
+            ${b.cover_image_url
+              ? `<img src="${escHtml(b.cover_image_url)}" alt="${escHtml(b.title)}" style="width:100%; height:220px; object-fit:cover; display:block;">`
+              : `<div class="ph" style="min-height:220px; border-radius:0;"><span>${escHtml(b.title)}</span></div>`}
+            <div class="card-body">
+              <h3>${escHtml(b.title)}</h3>
+              ${b.author ? `<p style="color:var(--muted); font-size:0.8rem; margin-bottom:6px;">${escHtml(b.author)}</p>` : ''}
+              ${b.description ? `<p>${escHtml(b.description)}</p>` : ''}
+              <span class="card-link">Otvori PDF →</span>
+            </div>
+          </a>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('booksGrid').innerHTML = '<p style="color:var(--muted);">Knjige se trenutno ne mogu učitati.</p>';
       });
 
     document.getElementById('testimonyForm').addEventListener('submit', async (e) => {

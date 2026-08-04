@@ -361,6 +361,129 @@ window.deleteMolitva = async function (id) {
 };
 loadMolitve();
 
+// ================= BOOKS =================
+async function uploadPdf(file) {
+  const formData = new FormData();
+  formData.append('pdf', file);
+  const res = await fetch('/api/admin/upload-pdf', { method: 'POST', body: formData });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Greška pri uploadu PDF-a.');
+  return data.url;
+}
+function setPdfStatus(url) {
+  const status = document.getElementById('bookPdfStatus');
+  const hidden = document.getElementById('bookPdfUrl');
+  hidden.value = url || '';
+  status.textContent = url ? '✓ PDF uploadan' : '';
+}
+async function loadBooks() {
+  const rows = await api('/api/admin/books');
+  const tbody = document.querySelector('#bookTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('bookEmpty').style.display = rows.length ? 'none' : 'block';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(r.title)}</td>
+      <td>${esc(r.author || '—')}</td>
+      <td><span class="badge ${r.published ? 'published' : 'pending'}">${r.published ? 'objavljeno' : 'skriveno'}</span></td>
+      <td class="actions">
+        <button class="btn secondary small" onclick="editBook(${r.id})">Uredi</button>
+        <button class="btn danger small" onclick="deleteBook(${r.id})">Obriši</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  window._bookRows = rows;
+}
+window.editBook = function (id) {
+  const r = window._bookRows.find((x) => x.id === id);
+  if (!r) return;
+  document.getElementById('bookFormTitle').textContent = 'Uredi knjigu';
+  document.getElementById('bookId').value = r.id;
+  document.getElementById('bookTitle').value = r.title;
+  document.getElementById('bookAuthor').value = r.author || '';
+  document.getElementById('bookDescription').value = r.description || '';
+  document.getElementById('bookPublished').checked = !!r.published;
+  document.getElementById('bookCancelBtn').style.display = 'inline-flex';
+  document.getElementById('bookImageFile').value = '';
+  setImagePreview('book', r.cover_image_url);
+  document.getElementById('bookPdfFile').value = '';
+  setPdfStatus(r.pdf_url);
+  window.scrollTo(0, 0);
+};
+document.getElementById('bookCancelBtn').addEventListener('click', () => resetBookForm());
+function resetBookForm() {
+  document.getElementById('bookFormTitle').textContent = 'Nova knjiga';
+  document.getElementById('bookId').value = '';
+  ['bookTitle', 'bookAuthor', 'bookDescription'].forEach((id) => document.getElementById(id).value = '');
+  document.getElementById('bookPublished').checked = true;
+  document.getElementById('bookCancelBtn').style.display = 'none';
+  document.getElementById('bookImageFile').value = '';
+  setImagePreview('book', '');
+  document.getElementById('bookPdfFile').value = '';
+  setPdfStatus('');
+}
+document.getElementById('bookImageFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('bookMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam naslovnicu...</div>';
+    const url = await uploadImage(file);
+    setImagePreview('book', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('bookImageRemoveBtn').addEventListener('click', () => {
+  document.getElementById('bookImageFile').value = '';
+  setImagePreview('book', '');
+});
+document.getElementById('bookPdfFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('bookMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam PDF...</div>';
+    const url = await uploadPdf(file);
+    setPdfStatus(url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
+document.getElementById('bookSaveBtn').addEventListener('click', async () => {
+  const id = document.getElementById('bookId').value;
+  const body = {
+    title: document.getElementById('bookTitle').value.trim(),
+    author: document.getElementById('bookAuthor').value.trim(),
+    description: document.getElementById('bookDescription').value.trim(),
+    cover_image_url: document.getElementById('bookImageUrl').value,
+    pdf_url: document.getElementById('bookPdfUrl').value,
+    published: document.getElementById('bookPublished').checked,
+  };
+  const msg = document.getElementById('bookMsg');
+  if (!body.title) { msg.innerHTML = '<div class="msg err">Naslov je obavezan.</div>'; return; }
+  if (!body.pdf_url) { msg.innerHTML = '<div class="msg err">Uploadaj PDF datoteku.</div>'; return; }
+  try {
+    if (id) await api('/api/admin/books/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/api/admin/books', { method: 'POST', body: JSON.stringify(body) });
+    msg.innerHTML = '<div class="msg ok">Spremljeno.</div>';
+    resetBookForm();
+    loadBooks();
+    setTimeout(() => (msg.innerHTML = ''), 2500);
+  } catch (e) {
+    msg.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+});
+window.deleteBook = async function (id) {
+  if (!confirm('Obrisati ovu knjigu?')) return;
+  await api('/api/admin/books/' + id, { method: 'DELETE' });
+  loadBooks();
+};
+loadBooks();
+
 // ================= PRAYERS =================
 async function loadPrayers() {
   const rows = await api('/api/admin/prayers');

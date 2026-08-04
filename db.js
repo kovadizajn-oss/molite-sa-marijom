@@ -109,6 +109,17 @@ async function initDb() {
       text TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS books (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      author TEXT DEFAULT '',
+      description TEXT DEFAULT '',
+      cover_image_url TEXT DEFAULT '',
+      pdf_url TEXT NOT NULL,
+      published INTEGER DEFAULT 1,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
   // Migracije za baze koje su možda nastale prije nego su ove kolone dodane
