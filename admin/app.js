@@ -287,6 +287,80 @@ window.deleteHodo = async function (id) {
   loadHodo();
 };
 
+// ================= MOLITVE =================
+const MOLITVA_CATEGORY_LABELS = {
+  'osnovne-molitve': 'Osnovne molitve',
+  'krunica': 'Krunica',
+  'prigodne-molitve': 'Prigodne molitve',
+  'litanije': 'Litanije',
+  'razne-molitve': 'Razne molitve',
+};
+async function loadMolitve() {
+  const rows = await api('/api/molitve');
+  const tbody = document.querySelector('#molitvaTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('molitvaEmpty').style.display = rows.length ? 'none' : 'block';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(MOLITVA_CATEGORY_LABELS[r.category] || r.category)}</td>
+      <td>${esc(r.title)}</td>
+      <td class="actions">
+        <button class="btn secondary small" onclick="editMolitva(${r.id})">Uredi</button>
+        <button class="btn danger small" onclick="deleteMolitva(${r.id})">Obriši</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  window._molitvaRows = rows;
+}
+window.editMolitva = function (id) {
+  const r = window._molitvaRows.find((x) => x.id === id);
+  if (!r) return;
+  document.getElementById('molitvaFormTitle').textContent = 'Uredi molitvu';
+  document.getElementById('molitvaId').value = r.id;
+  document.getElementById('molitvaCategory').value = r.category;
+  document.getElementById('molitvaTitle').value = r.title;
+  document.getElementById('molitvaText').value = r.text;
+  document.getElementById('molitvaCancelBtn').style.display = 'inline-flex';
+  window.scrollTo(0, 0);
+};
+document.getElementById('molitvaCancelBtn').addEventListener('click', () => resetMolitvaForm());
+function resetMolitvaForm() {
+  document.getElementById('molitvaFormTitle').textContent = 'Nova molitva';
+  document.getElementById('molitvaId').value = '';
+  document.getElementById('molitvaCategory').value = 'osnovne-molitve';
+  document.getElementById('molitvaTitle').value = '';
+  document.getElementById('molitvaText').value = '';
+  document.getElementById('molitvaCancelBtn').style.display = 'none';
+}
+document.getElementById('molitvaSaveBtn').addEventListener('click', async () => {
+  const id = document.getElementById('molitvaId').value;
+  const body = {
+    category: document.getElementById('molitvaCategory').value,
+    title: document.getElementById('molitvaTitle').value.trim(),
+    text: document.getElementById('molitvaText').value.trim(),
+  };
+  const msg = document.getElementById('molitvaMsg');
+  if (!body.title) { msg.innerHTML = '<div class="msg err">Naslov je obavezan.</div>'; return; }
+  if (!body.text) { msg.innerHTML = '<div class="msg err">Tekst molitve je obavezan.</div>'; return; }
+  try {
+    if (id) await api('/api/admin/molitve/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/api/admin/molitve', { method: 'POST', body: JSON.stringify(body) });
+    msg.innerHTML = '<div class="msg ok">Spremljeno.</div>';
+    resetMolitvaForm();
+    loadMolitve();
+    setTimeout(() => (msg.innerHTML = ''), 2500);
+  } catch (e) {
+    msg.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+});
+window.deleteMolitva = async function (id) {
+  if (!confirm('Obrisati ovu molitvu?')) return;
+  await api('/api/admin/molitve/' + id, { method: 'DELETE' });
+  loadMolitve();
+};
+loadMolitve();
+
 // ================= PRAYERS =================
 async function loadPrayers() {
   const rows = await api('/api/admin/prayers');

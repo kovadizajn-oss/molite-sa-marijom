@@ -743,6 +743,36 @@
   </div>
 </section>
 
+<script>
+  (function () {
+    function escHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+    function renderPrayerText(text) {
+      return String(text || '')
+        .split(/\n\s*\n/)
+        .filter(Boolean)
+        .map((para) => `<p>${escHtml(para).replace(/\n/g, '<br>')}</p>`)
+        .join('');
+    }
+    fetch('/api/molitve')
+      .then((r) => r.json())
+      .then((rows) => {
+        rows.forEach((r) => {
+          const container = document.getElementById(r.category);
+          if (!container) return;
+          const details = document.createElement('details');
+          details.className = 'prayer-item';
+          details.innerHTML = `<summary>${escHtml(r.title)}</summary><div class="prayer-text">${renderPrayerText(r.text)}</div>`;
+          container.appendChild(details);
+        });
+      })
+      .catch(() => {
+        // ako dohvat ne uspije, stranica i dalje prikazuje postojeću zbirku molitava
+      });
+  })();
+</script>
+
 <footer class="site-footer">
   <div class="container">
     <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>

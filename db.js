@@ -101,6 +101,14 @@ async function initDb() {
       visitor_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS custom_prayers (
+      id SERIAL PRIMARY KEY,
+      category TEXT NOT NULL,
+      title TEXT NOT NULL,
+      text TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
   // Migracije za baze koje su možda nastale prije nego su ove kolone dodane

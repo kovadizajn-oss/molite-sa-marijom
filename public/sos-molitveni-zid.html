@@ -105,19 +105,14 @@
     return 'prije ' + days + ' dana';
   }
 
+  // Pamti se samo dok je stranica otvorena (obično JS polje, ne localStorage) — čim se
+  // stranica osvježi ili se korisnik vrati kasnije, ponovno se može kliknuti "Molim za ovo".
+  const votedThisVisit = [];
   function getVoted() {
-    try {
-      return JSON.parse(localStorage.getItem('votedPrayers') || '[]');
-    } catch {
-      return [];
-    }
+    return votedThisVisit;
   }
   function markVoted(id) {
-    const voted = getVoted();
-    if (!voted.includes(id)) {
-      voted.push(id);
-      localStorage.setItem('votedPrayers', JSON.stringify(voted));
-    }
+    if (!votedThisVisit.includes(id)) votedThisVisit.push(id);
   }
 
   function loadWall() {

@@ -14,6 +14,7 @@
       <button class="tab-btn" data-tab="analytics">📊 Analitika</button>
       <button class="tab-btn active" data-tab="blog">📖 Blog</button>
       <button class="tab-btn" data-tab="hodocasca">⛪ Hodočašća</button>
+      <button class="tab-btn" data-tab="molitve">📿 Molitve</button>
       <button class="tab-btn" data-tab="prayers">✝ Molitveni zid</button>
       <button class="tab-btn" data-tab="testimonies">👥 Svjedočanstva</button>
       <button class="tab-btn" data-tab="questions">💬 Pitanja</button>
@@ -133,6 +134,40 @@
         <div class="toolbar"><h3>Sva hodočašća</h3></div>
         <table id="hodoTable"><thead><tr><th>Naziv</th><th>Lokacija</th><th>Datumi</th><th>Status</th><th>Radnje</th></tr></thead><tbody></tbody></table>
         <div class="empty" id="hodoEmpty" style="display:none;">Nema hodočašća.</div>
+      </div>
+    </section>
+
+    <!-- MOLITVE -->
+    <section class="tab-panel" id="tab-molitve">
+      <h1>Molitve</h1>
+      <p class="sub">Dodaj nove molitve u zbirku na /molitve.html — odaberi kategoriju, upiši naslov i tekst.</p>
+      <div class="panel">
+        <h3 id="molitvaFormTitle">Nova molitva</h3>
+        <div id="molitvaMsg"></div>
+        <input type="hidden" id="molitvaId">
+        <div class="form-grid">
+          <div class="full">
+            <label>Kategorija</label>
+            <select class="field" id="molitvaCategory">
+              <option value="osnovne-molitve">Osnovne molitve</option>
+              <option value="krunica">Krunica</option>
+              <option value="prigodne-molitve">Prigodne molitve</option>
+              <option value="litanije">Litanije</option>
+              <option value="razne-molitve">Razne molitve</option>
+            </select>
+          </div>
+          <div class="full"><label>Naslov molitve</label><input class="field" id="molitvaTitle" placeholder="npr. Molitva za obitelj"></div>
+          <div class="full"><label>Tekst molitve</label><textarea class="field" id="molitvaText" style="min-height:160px;"></textarea></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn small" id="molitvaSaveBtn" style="width:auto;">Spremi</button>
+          <button class="btn secondary small" id="molitvaCancelBtn" style="width:auto;display:none;">Odustani</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h3>Sve dodane molitve</h3></div>
+        <table id="molitvaTable"><thead><tr><th>Kategorija</th><th>Naslov</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="molitvaEmpty" style="display:none;">Nema još dodanih molitvi.</div>
       </div>
     </section>
 
