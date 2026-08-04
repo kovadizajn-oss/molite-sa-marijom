@@ -69,7 +69,7 @@ app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // i poziva iz api/index.js kao serverless funkcija.
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Molite sa Marijom sluša na portu ${PORT}`);
+    console.log(`Molite s Marijom sluša na portu ${PORT}`);
     console.log(`Javna stranica: http://localhost:${PORT}/`);
     console.log(`Admin panel:    http://localhost:${PORT}/admin/`);
   });

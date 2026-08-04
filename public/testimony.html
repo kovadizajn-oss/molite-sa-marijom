@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Svjedočanstvo — Molite sa Marijom</title>
+<title>Svjedočanstvo — Molite s Marijom</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="index.html" class="logo">MOLITE SA<span>Marijom</span></a>
+    <a href="index.html" class="logo">MOLITE S<span>Marijom</span></a>
     <nav class="main-nav">
       <a href="index.html">Početna</a>
       <a href="o-meni.html">O meni</a>
@@ -80,7 +80,7 @@
       })
       .then((t) => {
         const heading = t.title || t.name || 'Svjedočanstvo';
-        document.title = heading + ' — Molite sa Marijom';
+        document.title = heading + ' — Molite s Marijom';
         document.getElementById('testTitle').textContent = heading;
         document.getElementById('testMeta').textContent = [fmtDate(t.created_at), t.title && t.name ? t.name : null].filter(Boolean).join(' · ');
         document.getElementById('testImage').innerHTML = t.source === 'admin'
@@ -141,7 +141,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2024 Molite sa Marijom. Sva prava pridržana.</span>
+      <span>© 2024 Molite s Marijom. Sva prava pridržana.</span>
       <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
     </div>
   </div>

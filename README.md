@@ -1,4 +1,4 @@
-# Molite sa Marijom — stranica + admin panel
+# Molite s Marijom — stranica + admin panel
 
 Ovaj paket sadrži cijelu stranicu (javni dio) i admin panel preko kojeg se upravlja sadržajem: blog objave, hodočašća, molitvene nakane (SOS zid), svjedočanstva i pitanja.
 

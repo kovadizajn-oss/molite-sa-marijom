@@ -1,7 +1,7 @@
 {
   "name": "molite-sa-marijom",
   "version": "1.0.0",
-  "description": "Molite sa Marijom - stranica + admin panel",
+  "description": "Molite s Marijom - stranica + admin panel",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
