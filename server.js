@@ -15,6 +15,7 @@ const dailyThoughtRoutes = require('./routes/dailyThought');
 const analyticsRoutes = require('./routes/analytics');
 const customPrayersRoutes = require('./routes/customPrayers');
 const booksRoutes = require('./routes/books');
+const configRoutes = require('./routes/config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/api', dailyThoughtRoutes);
 app.use('/api', analyticsRoutes);
 app.use('/api', customPrayersRoutes);
 app.use('/api', booksRoutes);
+app.use('/api', configRoutes);
 
 // --- Jednostavno brojanje posjeta javnih stranica ---
 // Jedinstveni posjetitelj prati se anonimnim kolačićem (nasumičan id, bez IP adrese,

@@ -362,13 +362,32 @@ window.deleteMolitva = async function (id) {
 loadMolitve();
 
 // ================= BOOKS =================
+// PDF ide izravno iz preglednika u Supabase Storage (ne kroz našu Vercel funkciju),
+// jer Vercel serverless funkcije odbijaju zahtjeve veće od 4.5MB — a knjige lako prijeđu to.
+// Naša /api/admin/pdf-signed-upload ruta samo izda kratkotrajan potpisan link za upload.
+let _supabaseClientPromise = null;
+async function getSupabaseClient() {
+  if (!_supabaseClientPromise) {
+    _supabaseClientPromise = fetch('/api/config')
+      .then((r) => r.json())
+      .then((cfg) => {
+        if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+          throw new Error('Supabase nije konfiguriran (nedostaje SUPABASE_ANON_KEY na serveru).');
+        }
+        return { client: window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey), bucket: cfg.supabaseBucket };
+      });
+  }
+  return _supabaseClientPromise;
+}
 async function uploadPdf(file) {
-  const formData = new FormData();
-  formData.append('pdf', file);
-  const res = await fetch('/api/admin/upload-pdf', { method: 'POST', body: formData });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Greška pri uploadu PDF-a.');
-  return data.url;
+  const signed = await api('/api/admin/pdf-signed-upload', {
+    method: 'POST',
+    body: JSON.stringify({ filename: file.name }),
+  });
+  const { client } = await getSupabaseClient();
+  const { error } = await client.storage.from(signed.bucket).uploadToSignedUrl(signed.path, signed.token, file);
+  if (error) throw new Error(error.message || 'Greška pri uploadu PDF-a.');
+  return signed.publicUrl;
 }
 function setPdfStatus(url) {
   const status = document.getElementById('bookPdfStatus');
