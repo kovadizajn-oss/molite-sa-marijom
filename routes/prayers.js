@@ -37,9 +37,11 @@ router.post('/prayers/:id/pray', async (req, res) => {
 
   // Koristimo isti anonimni 'vid' kolačić kao i za analitiku (bez IP-a, bez osobnih podataka).
   // Ako ga iz nekog razloga nema (npr. kolačići blokirani), padamo natrag na IP kao rezervu.
-  const voterId = (req.cookies && req.cookies.vid) ||
+  const cookieVid = req.cookies && req.cookies.vid;
+  const voterId = cookieVid ||
     (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
   const voterHash = crypto.createHash('sha256').update(voterId + ':' + prayerId).digest('hex');
+  console.log(`[pray] prayerId=${prayerId} usedCookie=${!!cookieVid} voterId=${voterId}`);
 
   try {
     await db.query('INSERT INTO prayer_votes (prayer_id, voter_hash) VALUES ($1, $2)', [prayerId, voterHash]);

@@ -162,7 +162,7 @@
         if (countEl) countEl.textContent = String((parseInt(countEl.textContent, 10) || 0) + 1);
       } else if (res.status === 409) {
         markVoted(id);
-        btn.textContent = '🙏 Hvala što molite s nama!';
+        btn.textContent = '🙏 Već ste molili za ovu nakanu';
         btn.style.opacity = '0.75';
       } else {
         btn.disabled = false;
