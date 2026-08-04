@@ -83,7 +83,7 @@
         document.getElementById('postTitle').textContent = p.title;
         document.getElementById('postMeta').textContent = [fmtDate(p.created_at), p.category].filter(Boolean).join(' · ');
         document.getElementById('postImage').innerHTML = p.image_url
-          ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; max-height:420px; object-fit:cover; border-radius:8px; display:block;">`
+          ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:auto; max-height:640px; object-fit:contain; border-radius:8px; display:block; margin:0 auto;">`
           : `<div class="ph" style="min-height:260px;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`;
         const paragraphs = (p.content || p.excerpt || '').split(/\n+/).filter(Boolean);
         document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
