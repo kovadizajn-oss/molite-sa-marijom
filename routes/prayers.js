@@ -10,6 +10,8 @@ router.get('/prayers', async (req, res) => {
   const { rows } = await db.query(
     "SELECT id, name, message, anonymous, pray_count, created_at FROM prayers WHERE status = 'approved' ORDER BY created_at DESC LIMIT 30"
   );
+  console.log('[prayers][GET] pray_count po nakani:', rows.map((r) => `#${r.id}=${r.pray_count}`).join(', '));
+  res.set('Cache-Control', 'no-store');
   res.json(rows);
 });
 
@@ -52,8 +54,13 @@ router.post('/prayers/:id/pray', async (req, res) => {
     throw err;
   }
 
-  await db.query('UPDATE prayers SET pray_count = pray_count + 1 WHERE id = $1', [prayerId]);
-  res.json({ ok: true });
+  const updated = await db.query(
+    'UPDATE prayers SET pray_count = pray_count + 1 WHERE id = $1 RETURNING pray_count',
+    [prayerId]
+  );
+  console.log(`[pray] uspjelo, prayerId=${prayerId} novi pray_count=${updated.rows[0] && updated.rows[0].pray_count}`);
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, pray_count: updated.rows[0] && updated.rows[0].pray_count });
 });
 
 // --- Admin: sve nakane (uključujući one na čekanju) ---

@@ -121,7 +121,7 @@
   }
 
   function loadWall() {
-    fetch('/api/prayers')
+    fetch('/api/prayers', { cache: 'no-store' })
       .then((r) => r.json())
       .then((rows) => {
         const wall = document.getElementById('prayerWall');
@@ -153,13 +153,14 @@
     btn.disabled = true;
     btn.textContent = '🙏 Hvala što molite s nama!';
     try {
-      const res = await fetch('/api/prayers/' + id + '/pray', { method: 'POST' });
+      const res = await fetch('/api/prayers/' + id + '/pray', { method: 'POST', cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         markVoted(id);
         btn.textContent = '🙏 Hvala što molite s nama!';
         btn.style.opacity = '0.85';
         const countEl = document.getElementById('prayCount-' + id);
-        if (countEl) countEl.textContent = String((parseInt(countEl.textContent, 10) || 0) + 1);
+        if (countEl && typeof data.pray_count === 'number') countEl.textContent = String(data.pray_count);
       } else if (res.status === 409) {
         markVoted(id);
         btn.textContent = '🙏 Već ste molili za ovu nakanu';
