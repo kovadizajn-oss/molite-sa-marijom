@@ -274,8 +274,6 @@ section{ padding: 64px 0; }
 
 .grid{ display: grid; gap: 28px; }
 .grid-3{ grid-template-columns: repeat(3, 1fr); }
-/* homepage blog grid: auto-fit tako da 1-2 objave ne ostave prazan prostor, a i dalje ostaje responsive */
-#homeBlogGrid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 .grid-2{ grid-template-columns: repeat(2, 1fr); }
 .grid-5{ grid-template-columns: repeat(5, 1fr); }
 .grid-4{ grid-template-columns: repeat(4, 1fr); }
