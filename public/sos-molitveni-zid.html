@@ -151,31 +151,24 @@
 
   window.prayFor = async function (id, btn) {
     btn.disabled = true;
-    btn.textContent = '🙏 Hvala što molite s nama!';
+    btn.textContent = '🙏 …';
     try {
       const res = await fetch('/api/prayers/' + id + '/pray', { method: 'POST', cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        markVoted(id);
-        btn.textContent = '🙏 Hvala što molite s nama!';
-        btn.style.opacity = '0.85';
-        const countEl = document.getElementById('prayCount-' + id);
-        if (countEl && typeof data.pray_count === 'number') countEl.textContent = String(data.pray_count);
-      } else if (res.status === 409) {
-        markVoted(id);
-        btn.textContent = '🙏 Već ste molili za ovu nakanu';
-        btn.style.opacity = '0.75';
-      } else {
+      if (!res.ok) {
         btn.disabled = false;
         btn.textContent = '🙏 Molim za ovo';
         return;
       }
+      markVoted(id);
+      btn.textContent = '🙏 Hvala što molite s nama!';
+      btn.style.opacity = '0.85';
+      const countEl = document.getElementById('prayCount-' + id);
+      if (countEl && typeof data.pray_count === 'number') countEl.textContent = String(data.pray_count);
     } catch {
       btn.disabled = false;
       btn.textContent = '🙏 Molim za ovo';
-      return;
     }
-    setTimeout(loadWall, 1200);
   };
 
   loadWall();

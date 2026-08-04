@@ -1,5 +1,4 @@
 const express = require('express');
-const crypto = require('node:crypto');
 const db = require('../db');
 const requireAdmin = require('../middleware/requireAdmin');
 
@@ -10,7 +9,6 @@ router.get('/prayers', async (req, res) => {
   const { rows } = await db.query(
     "SELECT id, name, message, anonymous, pray_count, created_at FROM prayers WHERE status = 'approved' ORDER BY created_at DESC LIMIT 30"
   );
-  console.log('[prayers][GET] pray_count po nakani:', rows.map((r) => `#${r.id}=${r.pray_count}`).join(', '));
   res.set('Cache-Control', 'no-store');
   res.json(rows);
 });
@@ -28,39 +26,21 @@ router.post('/prayers', async (req, res) => {
   res.json({ ok: true, message: 'Hvala, vaša nakana je poslana i bit će objavljena nakon pregleda.' });
 });
 
-// --- Javno: klik "Molim za ovo" — jedan glas po pregledniku (anonimni kolačić) po nakani ---
+// --- Javno: klik "Molim za ovo" — jednostavno +1, bez praćenja tko je već glasao ---
+// (unutar iste sesije preglednika gumb se sam onemogući preko localStorage na frontendu;
+// ne provjeravamo IP/kolačić na serveru jer to nepotrebno kompliciralo i pravilo probleme)
 router.post('/prayers/:id/pray', async (req, res) => {
   const prayerId = req.params.id;
 
-  const { rows } = await db.query("SELECT id FROM prayers WHERE id = $1 AND status = 'approved'", [prayerId]);
-  if (!rows[0]) {
-    return res.status(404).json({ error: 'Nakana nije pronađena.' });
-  }
-
-  // Koristimo isti anonimni 'vid' kolačić kao i za analitiku (bez IP-a, bez osobnih podataka).
-  // Ako ga iz nekog razloga nema (npr. kolačići blokirani), padamo natrag na IP kao rezervu.
-  const cookieVid = req.cookies && req.cookies.vid;
-  const voterId = cookieVid ||
-    (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
-  const voterHash = crypto.createHash('sha256').update(voterId + ':' + prayerId).digest('hex');
-  console.log(`[pray] prayerId=${prayerId} usedCookie=${!!cookieVid} voterId=${voterId}`);
-
-  try {
-    await db.query('INSERT INTO prayer_votes (prayer_id, voter_hash) VALUES ($1, $2)', [prayerId, voterHash]);
-  } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'Već ste molili za ovu nakanu.' });
-    }
-    throw err;
-  }
-
   const updated = await db.query(
-    'UPDATE prayers SET pray_count = pray_count + 1 WHERE id = $1 RETURNING pray_count',
+    "UPDATE prayers SET pray_count = pray_count + 1 WHERE id = $1 AND status = 'approved' RETURNING pray_count",
     [prayerId]
   );
-  console.log(`[pray] uspjelo, prayerId=${prayerId} novi pray_count=${updated.rows[0] && updated.rows[0].pray_count}`);
+  if (!updated.rows[0]) {
+    return res.status(404).json({ error: 'Nakana nije pronađena.' });
+  }
   res.set('Cache-Control', 'no-store');
-  res.json({ ok: true, pray_count: updated.rows[0] && updated.rows[0].pray_count });
+  res.json({ ok: true, pray_count: updated.rows[0].pray_count });
 });
 
 // --- Admin: sve nakane (uključujući one na čekanju) ---
