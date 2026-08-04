@@ -64,6 +64,7 @@
 
       <div class="daily-thought">
         <div class="tag">☀ Zraka svjetla u danu</div>
+        <img id="dtImageDisplay" src="" alt="" style="width:56px; height:56px; object-fit:cover; border-radius:10px; display:none; margin-bottom:10px;">
         <blockquote id="dtQuoteDisplay">"Gospodin je pastir moj, ničeg mi ne nedostaje."</blockquote>
         <p id="dtSourceDisplay" style="color:var(--muted); font-size:0.78rem; margin:0 0 12px;">– Psalam 23,1</p>
       </div>
@@ -81,6 +82,13 @@
       .then((t) => {
         document.getElementById('dtQuoteDisplay').textContent = '"' + t.quote + '"';
         document.getElementById('dtSourceDisplay').textContent = t.source ? '– ' + t.source : '';
+        const img = document.getElementById('dtImageDisplay');
+        if (t.image_url) {
+          img.src = t.image_url;
+          img.style.display = 'block';
+        } else {
+          img.style.display = 'none';
+        }
       })
       .catch(() => {
         // nema objavljene misli dana — ostaje zadani tekst iz HTML-a
