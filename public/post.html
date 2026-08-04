@@ -79,7 +79,7 @@
   }
   function fmtDate(s) {
     if (!s) return '';
-    const d = new Date(s.replace(' ', 'T') + 'Z');
+    const d = new Date(s);
     if (isNaN(d)) return '';
     return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
   }

@@ -51,10 +51,16 @@ app.use('/api', analyticsRoutes);
 const VISITOR_COOKIE = 'vid';
 const VISITOR_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 dana
 
+// Botovi (WhatsApp/Facebook/Messenger/Viber pregled linka, tražilice, razni skeneri) ne
+// pamte kolačiće — svaki njihov posjet bi inače brojali kao novog "jedinstvenog posjetitelja",
+// pa ih ovdje potpuno izbacujemo iz brojanja.
+const BOT_UA_PATTERN = /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegrambot|discordbot|slackbot|linkedinbot|pinterest|embedly|quora link preview|outbrain|vkshare|w3c_validator|redditbot|applebot|bingpreview|semrushbot|ahrefsbot|mj12bot|dotbot|petalbot|curl|wget|python-requests|headlesschrome|phantomjs|uptimerobot|pingdom|statuscake/i;
+
 app.use(async (req, res, next) => {
   const isPageRequest = req.method === 'GET' && (req.path === '/' || req.path.endsWith('.html'));
   const isAdminOrApi = req.path.startsWith('/admin') || req.path.startsWith('/api');
-  if (isPageRequest && !isAdminOrApi) {
+  const isBot = BOT_UA_PATTERN.test(req.headers['user-agent'] || '');
+  if (isPageRequest && !isAdminOrApi && !isBot) {
     try {
       let visitorId = req.cookies && req.cookies[VISITOR_COOKIE];
       if (!visitorId) {
