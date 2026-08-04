@@ -26,7 +26,7 @@ router.post('/prayers', async (req, res) => {
   res.json({ ok: true, message: 'Hvala, vaša nakana je poslana i bit će objavljena nakon pregleda.' });
 });
 
-// --- Javno: klik "Molim za ovo" — jedan glas po osobi (IP) po nakani ---
+// --- Javno: klik "Molim za ovo" — jedan glas po pregledniku (anonimni kolačić) po nakani ---
 router.post('/prayers/:id/pray', async (req, res) => {
   const prayerId = req.params.id;
 
@@ -35,8 +35,11 @@ router.post('/prayers/:id/pray', async (req, res) => {
     return res.status(404).json({ error: 'Nakana nije pronađena.' });
   }
 
-  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
-  const voterHash = crypto.createHash('sha256').update(ip + ':' + prayerId).digest('hex');
+  // Koristimo isti anonimni 'vid' kolačić kao i za analitiku (bez IP-a, bez osobnih podataka).
+  // Ako ga iz nekog razloga nema (npr. kolačići blokirani), padamo natrag na IP kao rezervu.
+  const voterId = (req.cookies && req.cookies.vid) ||
+    (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  const voterHash = crypto.createHash('sha256').update(voterId + ':' + prayerId).digest('hex');
 
   try {
     await db.query('INSERT INTO prayer_votes (prayer_id, voter_hash) VALUES ($1, $2)', [prayerId, voterHash]);
