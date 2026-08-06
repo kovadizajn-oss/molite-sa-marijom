@@ -55,8 +55,12 @@
     <div class="section-head">
       <div><h2>Svjedočanstva</h2><div class="divider"></div></div>
     </div>
-    <div class="grid grid-3" id="adminTestimoniesGrid">
-      <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" id="adminTestPrev" aria-label="Prethodno">‹</button>
+      <div class="carousel-track" id="adminTestimoniesGrid">
+        <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
+      </div>
+      <button class="carousel-btn next" id="adminTestNext" aria-label="Sljedeće">›</button>
     </div>
   </div>
 </section>
@@ -67,8 +71,12 @@
       <div><h2>Knjige</h2><div class="divider"></div></div>
       <p class="sub">Kliknite na knjigu da je otvorite kao PDF</p>
     </div>
-    <div class="grid grid-3" id="booksGrid">
-      <p style="color:var(--muted);">Učitavanje knjiga...</p>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" id="booksPrev" aria-label="Prethodno">‹</button>
+      <div class="carousel-track" id="booksGrid">
+        <p style="color:var(--muted);">Učitavanje knjiga...</p>
+      </div>
+      <button class="carousel-btn next" id="booksNext" aria-label="Sljedeće">›</button>
     </div>
   </div>
 </section>
@@ -79,8 +87,12 @@
       <div><h2>Vaša svjedočanstva</h2><div class="divider"></div></div>
       <p class="sub">Priče koje je zajednica podijelila s nama</p>
     </div>
-    <div class="grid grid-3" id="testimoniesGrid">
-      <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" id="userTestPrev" aria-label="Prethodno">‹</button>
+      <div class="carousel-track" id="testimoniesGrid">
+        <p style="color:var(--muted);">Učitavanje svjedočanstava...</p>
+      </div>
+      <button class="carousel-btn next" id="userTestNext" aria-label="Sljedeće">›</button>
     </div>
   </div>
 </section>
@@ -102,6 +114,42 @@
     function escHtml(s) {
       return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
+
+    // Vodoravni carousel: strelice lijevo/desno + automatsko klizanje svakih 5s
+    // dok korisnik prvi put ne klikne strelicu ili sam ne skrola (onda se auto zaustavi).
+    function setupCarousel(track, prevBtn, nextBtn) {
+      if (!track || !track.querySelector('.card')) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        return;
+      }
+      function cardStep() {
+        const card = track.querySelector('.card');
+        const gap = parseFloat(getComputedStyle(track).gap) || 0;
+        return (card ? card.getBoundingClientRect().width : 320) + gap;
+      }
+      function scrollNext() {
+        const maxScroll = track.scrollWidth - track.clientWidth;
+        if (track.scrollLeft >= maxScroll - 4) {
+          track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          track.scrollBy({ left: cardStep(), behavior: 'smooth' });
+        }
+      }
+      function scrollPrev() {
+        track.scrollBy({ left: -cardStep(), behavior: 'smooth' });
+      }
+      let autoTimer = setInterval(scrollNext, 5000);
+      function stopAuto() {
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      }
+      if (prevBtn) prevBtn.addEventListener('click', () => { scrollPrev(); stopAuto(); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { scrollNext(); stopAuto(); });
+      track.addEventListener('wheel', stopAuto, { passive: true });
+      track.addEventListener('touchstart', stopAuto, { passive: true });
+      track.addEventListener('pointerdown', stopAuto);
+    }
+
     fetch('/api/testimonies')
       .then((r) => r.json())
       .then((rows) => {
@@ -138,10 +186,12 @@
         adminGrid.innerHTML = adminRows.length
           ? adminRows.map((r) => cardHtml(r, 'Fotografija uz svjedočanstvo (opcionalno)')).join('')
           : '<p style="color:var(--muted);">Uskoro prva svjedočanstva.</p>';
+        setupCarousel(adminGrid, document.getElementById('adminTestPrev'), document.getElementById('adminTestNext'));
 
         userGrid.innerHTML = userRows.length
           ? userRows.map((r) => cardHtml(r)).join('')
           : '<p style="color:var(--muted);">Još nema objavljenih svjedočanstava. Budite prvi koji će podijeliti svoje!</p>';
+        setupCarousel(userGrid, document.getElementById('userTestPrev'), document.getElementById('userTestNext'));
       })
       .catch(() => {
         document.getElementById('adminTestimoniesGrid').innerHTML = '<p style="color:var(--muted);">Svjedočanstva se trenutno ne mogu učitati.</p>';
@@ -169,6 +219,7 @@
             </div>
           </a>
         `).join('');
+        setupCarousel(grid, document.getElementById('booksPrev'), document.getElementById('booksNext'));
       })
       .catch(() => {
         document.getElementById('booksGrid').innerHTML = '<p style="color:var(--muted);">Knjige se trenutno ne mogu učitati.</p>';
