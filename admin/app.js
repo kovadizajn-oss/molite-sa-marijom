@@ -100,16 +100,22 @@ async function loadAnalytics() {
 
 // ================= BLOG =================
 async function loadBlog() {
-  const rows = await api('/api/admin/blog');
+  const [rows, ratings] = await Promise.all([
+    api('/api/admin/blog'),
+    api('/api/blog-ratings/summary').catch(() => ({})),
+  ]);
   const tbody = document.querySelector('#blogTable tbody');
   tbody.innerHTML = '';
   document.getElementById('blogEmpty').style.display = rows.length ? 'none' : 'block';
   rows.forEach((r) => {
+    const rating = ratings[r.id];
+    const ratingText = rating && rating.count ? `★ ${rating.average.toFixed(1)} (${rating.count})` : '—';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${esc(r.title)}</td>
       <td>${esc(r.category)}</td>
       <td>${r.views || 0}</td>
+      <td>${ratingText}</td>
       <td><span class="badge ${r.published ? 'published' : 'pending'}">${r.published ? 'objavljeno' : 'skriveno'}</span></td>
       <td>${fmtDate(r.created_at)}</td>
       <td class="actions">
