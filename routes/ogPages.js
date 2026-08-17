@@ -138,4 +138,39 @@ router.get('/hodocasce.html', async (req, res) => {
   }
 });
 
+router.get('/book.html', async (req, res) => {
+  const id = req.query.id;
+  const template = fs.readFileSync(path.join(PUBLIC_DIR, 'book-template.html'), 'utf8');
+  const origin = req.protocol + '://' + req.get('host');
+
+  if (!id) {
+    res.set('Cache-Control', 'no-store');
+    return res.type('html').send(template);
+  }
+
+  try {
+    const { rows } = await db.query(
+      'SELECT title, author, description, cover_image_url FROM books WHERE id = $1 AND published = 1',
+      [id]
+    );
+    const b = rows[0];
+    if (!b) {
+      res.set('Cache-Control', 'no-store');
+      return res.type('html').send(template);
+    }
+    const html = injectOgTags(template, {
+      title: b.title + ' — Molite s Marijom',
+      description: (b.description || 'Pročitajte knjigu na Molite s Marijom.').slice(0, 160),
+      image: b.cover_image_url || origin + '/images/hero-molitva.jpg',
+      url: origin + '/book.html?id=' + id,
+    });
+    res.set('Cache-Control', 'no-store');
+    res.type('html').send(html);
+  } catch (e) {
+    console.error('[og] /book.html id=' + id + ' -> GREŠKA:', e.message);
+    res.set('Cache-Control', 'no-store');
+    res.type('html').send(template);
+  }
+});
+
 module.exports = router;

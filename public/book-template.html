@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knjiga — Molite s Marijom</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Molite s Marijom">
+<meta property="og:title" content="Knjiga — Molite s Marijom">
+<meta property="og:description" content="Pročitajte knjigu na Molite s Marijom.">
+<meta property="og:image" content="https://www.molitesmarijom.com/images/hero-molitva.jpg">
+<meta property="og:url" content="https://www.molitesmarijom.com/book.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Knjiga — Molite s Marijom">
+<meta name="twitter:description" content="Pročitajte knjigu na Molite s Marijom.">
+<meta name="twitter:image" content="https://www.molitesmarijom.com/images/hero-molitva.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo">MOLITE S<span>Marijom</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Izbornik" aria-expanded="false">☰</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="/">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html" class="active">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+<script>
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mainNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var isOpen = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    nav.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+</script>
+
+<section class="page-hero" id="bookHero" style="display:none;">
+  <div class="container">
+    <h1 id="bookTitle"></h1>
+    <p class="lead" id="bookMeta"></p>
+  </div>
+</section>
+
+<section id="bookLoading">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <p style="color:var(--muted);">Učitavanje knjige...</p>
+  </div>
+</section>
+
+<section id="bookBody" style="display:none;">
+  <div class="container" style="max-width:600px; text-align:center;">
+    <div id="bookImage" style="margin-bottom:28px;"></div>
+    <div id="bookDescription" style="font-size:1.05rem; line-height:1.8; color:var(--ink); text-align:left; margin-bottom:32px;"></div>
+    <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+      <a href="svjedocanstva.html" class="btn btn-outline">← Natrag na knjige</a>
+      <a id="bookOpenBtn" href="#" target="_blank" rel="noopener" class="btn btn-gold">Otvori PDF →</a>
+    </div>
+  </div>
+</section>
+
+<section id="bookNotFound" style="display:none;">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <h2>Knjiga nije pronađena</h2>
+    <p style="color:var(--muted); margin-bottom:24px;">Možda je uklonjena ili link nije ispravan.</p>
+    <a href="svjedocanstva.html" class="btn btn-gold">Natrag na knjige</a>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) {
+    document.getElementById('bookLoading').style.display = 'none';
+    document.getElementById('bookNotFound').style.display = '';
+  } else {
+    fetch('/api/books/' + id)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then((b) => {
+        document.title = b.title + ' — Molite s Marijom';
+        document.getElementById('bookTitle').textContent = b.title;
+        document.getElementById('bookMeta').textContent = b.author || '';
+        document.getElementById('bookImage').innerHTML = b.cover_image_url
+          ? `<img src="${escHtml(b.cover_image_url)}" alt="${escHtml(b.title)}" style="max-width:280px; width:100%; height:auto; border-radius:8px; display:block; margin:0 auto;">`
+          : `<div class="ph" style="min-height:220px;"><span>${escHtml(b.title)}</span></div>`;
+        document.getElementById('bookDescription').innerHTML = b.description
+          ? `<p>${escHtml(b.description)}</p>`
+          : '';
+        document.getElementById('bookOpenBtn').href = b.pdf_url;
+
+        document.getElementById('bookLoading').style.display = 'none';
+        document.getElementById('bookHero').style.display = '';
+        document.getElementById('bookBody').style.display = '';
+      })
+      .catch(() => {
+        document.getElementById('bookLoading').style.display = 'none';
+        document.getElementById('bookNotFound').style.display = '';
+      });
+  }
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="/">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite s Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -10,6 +10,13 @@ router.get('/books', async (req, res) => {
   res.json(rows);
 });
 
+router.get('/books/:id', async (req, res) => {
+  const { rows } = await db.query('SELECT * FROM books WHERE id = $1 AND published = 1', [req.params.id]);
+  const row = rows[0];
+  if (!row) return res.status(404).json({ error: 'Knjiga nije pronađena.' });
+  res.json(row);
+});
+
 // --- Admin: sve knjige (uključujući neobjavljene) ---
 router.get('/admin/books', requireAdmin, async (req, res) => {
   const { rows } = await db.query('SELECT * FROM books ORDER BY created_at DESC');

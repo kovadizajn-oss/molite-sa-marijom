@@ -195,6 +195,12 @@
       }
     }
 
+    function truncate(s, max) {
+      const str = String(s || '');
+      if (str.length <= max) return str;
+      return str.slice(0, max).replace(/\s+\S*$/, '') + '…';
+    }
+
     fetch('/api/testimonies')
       .then((r) => r.json())
       .then((rows) => {
@@ -203,23 +209,15 @@
         const adminRows = rows.filter((r) => r.source === 'admin');
         const userRows = rows.filter((r) => r.source !== 'admin');
 
-        function truncate(s, max) {
-          const str = String(s || '');
-          if (str.length <= max) return str;
-          return str.slice(0, max).replace(/\s+\S*$/, '') + '…';
-        }
-
         function cardHtml(r, placeholderText) {
           const showImageArea = r.source === 'admin';
           const isPdf = !!r.pdf_url;
-          const href = isPdf ? r.pdf_url : `testimony.html?id=${r.id}`;
-          const target = isPdf ? ' target="_blank" rel="noopener"' : '';
           const bodyText = isPdf
             ? 'Svjedočanstvo dostupno u PDF obliku.'
             : escHtml(truncate(r.story, 160));
-          const linkText = isPdf ? 'Otvori PDF →' : 'Pročitaj svjedočanstvo →';
+          const linkText = isPdf ? 'Otvori →' : 'Pročitaj svjedočanstvo →';
           return `
-          <a href="${escHtml(href)}"${target} class="card" style="text-decoration:none; color:inherit; display:block;">
+          <a href="testimony.html?id=${r.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
             ${showImageArea
               ? (r.image_url
                   ? `<img src="${escHtml(r.image_url)}" alt="${escHtml(r.title || r.name || 'Svjedočanstvo')}" style="width:100%; height:150px; object-fit:cover; display:block;">`
@@ -259,15 +257,15 @@
           return;
         }
         grid.innerHTML = rows.map((b) => `
-          <a href="${escHtml(b.pdf_url)}" target="_blank" rel="noopener" class="card" style="text-decoration:none; color:inherit; display:block;">
+          <a href="book.html?id=${b.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
             ${b.cover_image_url
               ? `<img src="${escHtml(b.cover_image_url)}" alt="${escHtml(b.title)}" style="width:100%; height:220px; object-fit:cover; display:block;">`
               : `<div class="ph" style="min-height:220px; border-radius:0;"><span>${escHtml(b.title)}</span></div>`}
             <div class="card-body">
               <h3>${escHtml(b.title)}</h3>
               ${b.author ? `<p style="color:var(--muted); font-size:0.8rem; margin-bottom:6px;">${escHtml(b.author)}</p>` : ''}
-              ${b.description ? `<p>${escHtml(b.description)}</p>` : ''}
-              <span class="card-link">Otvori PDF →</span>
+              ${b.description ? `<p>${escHtml(truncate(b.description, 140))}</p>` : ''}
+              <span class="card-link">Pogledaj knjigu →</span>
             </div>
           </a>
         `).join('');
