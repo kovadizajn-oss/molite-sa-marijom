@@ -211,8 +211,15 @@
 
         function cardHtml(r, placeholderText) {
           const showImageArea = r.source === 'admin';
+          const isPdf = !!r.pdf_url;
+          const href = isPdf ? r.pdf_url : `testimony.html?id=${r.id}`;
+          const target = isPdf ? ' target="_blank" rel="noopener"' : '';
+          const bodyText = isPdf
+            ? 'Svjedočanstvo dostupno u PDF obliku.'
+            : escHtml(truncate(r.story, 160));
+          const linkText = isPdf ? 'Otvori PDF →' : 'Pročitaj svjedočanstvo →';
           return `
-          <a href="testimony.html?id=${r.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+          <a href="${escHtml(href)}"${target} class="card" style="text-decoration:none; color:inherit; display:block;">
             ${showImageArea
               ? (r.image_url
                   ? `<img src="${escHtml(r.image_url)}" alt="${escHtml(r.title || r.name || 'Svjedočanstvo')}" style="width:100%; height:150px; object-fit:cover; display:block;">`
@@ -221,8 +228,8 @@
             <div class="card-body">
               <h3>${escHtml(r.title || r.name || 'Anonimno')}</h3>
               ${r.title && r.name ? `<p style="color:var(--muted); font-size:0.8rem; margin-bottom:6px;">${escHtml(r.name)}</p>` : ''}
-              <p>${escHtml(truncate(r.story, 160))}</p>
-              <span class="card-link">Pročitaj svjedočanstvo →</span>
+              <p>${bodyText}</p>
+              <span class="card-link">${linkText}</span>
             </div>
           </a>
         `;

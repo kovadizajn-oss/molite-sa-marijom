@@ -246,7 +246,24 @@
             </div>
             <input type="hidden" id="adminTestImageUrl">
           </div>
-          <div class="full"><label>Priča</label><textarea class="field" id="adminTestStory"></textarea></div>
+          <div class="full">
+            <label>Način unosa</label>
+            <div style="display:flex; gap:20px; text-transform:none; font-weight:400;">
+              <label style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="adminTestMode" id="adminTestModeText" value="text" checked style="width:auto;"> Napišite tekst
+              </label>
+              <label style="display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="adminTestMode" id="adminTestModePdf" value="pdf" style="width:auto;"> Uploadajte PDF
+              </label>
+            </div>
+          </div>
+          <div class="full" id="adminTestStoryWrap"><label>Priča</label><textarea class="field" id="adminTestStory"></textarea></div>
+          <div class="full" id="adminTestPdfWrap" style="display:none;">
+            <label>PDF datoteka</label>
+            <input class="field" type="file" id="adminTestPdfFile" accept="application/pdf">
+            <div id="adminTestPdfStatus" style="margin-top:6px; font-size:0.85rem; color:var(--muted-2, #7a6a55);"></div>
+            <input type="hidden" id="adminTestPdfUrl">
+          </div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;text-transform:none;">
           <input type="checkbox" id="adminTestPublished" checked style="width:auto;"> Objavljeno (vidljivo na stranici)

@@ -145,6 +145,7 @@ async function initDb() {
   await ensureColumn('testimonies', 'image_url', "TEXT DEFAULT ''");
   await ensureColumn('testimonies', 'title', "TEXT DEFAULT ''");
   await ensureColumn('testimonies', 'source', "TEXT DEFAULT 'user'");
+  await ensureColumn('testimonies', 'pdf_url', "TEXT DEFAULT ''");
   await ensureColumn('daily_thoughts', 'image_url', "TEXT DEFAULT ''");
   await ensureColumn('blog_posts', 'views', 'INTEGER DEFAULT 0');
 

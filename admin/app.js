@@ -395,9 +395,9 @@ async function uploadPdf(file) {
   if (error) throw new Error(error.message || 'Greška pri uploadu PDF-a.');
   return signed.publicUrl;
 }
-function setPdfStatus(url) {
-  const status = document.getElementById('bookPdfStatus');
-  const hidden = document.getElementById('bookPdfUrl');
+function setPdfStatus(prefix, url) {
+  const status = document.getElementById(prefix + 'PdfStatus');
+  const hidden = document.getElementById(prefix + 'PdfUrl');
   hidden.value = url || '';
   status.textContent = url ? '✓ PDF uploadan' : '';
 }
@@ -433,7 +433,7 @@ window.editBook = function (id) {
   document.getElementById('bookImageFile').value = '';
   setImagePreview('book', r.cover_image_url);
   document.getElementById('bookPdfFile').value = '';
-  setPdfStatus(r.pdf_url);
+  setPdfStatus('book', r.pdf_url);
   window.scrollTo(0, 0);
 };
 document.getElementById('bookCancelBtn').addEventListener('click', () => resetBookForm());
@@ -446,7 +446,7 @@ function resetBookForm() {
   document.getElementById('bookImageFile').value = '';
   setImagePreview('book', '');
   document.getElementById('bookPdfFile').value = '';
-  setPdfStatus('');
+  setPdfStatus('book', '');
 }
 document.getElementById('bookImageFile').addEventListener('change', async (e) => {
   const file = e.target.files[0];
@@ -472,7 +472,7 @@ document.getElementById('bookPdfFile').addEventListener('change', async (e) => {
   try {
     msg.innerHTML = '<div class="msg">Uploadam PDF...</div>';
     const url = await uploadPdf(file);
-    setPdfStatus(url);
+    setPdfStatus('book', url);
     msg.innerHTML = '';
   } catch (err) {
     msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
@@ -550,11 +550,14 @@ async function loadTestimonies() {
   rows.forEach((r) => {
     const tr = document.createElement('tr');
     const isAdmin = r.source === 'admin';
+    const storyCell = r.pdf_url
+      ? `<a href="${esc(r.pdf_url)}" target="_blank" rel="noopener">📄 Otvori PDF</a>`
+      : esc(r.story);
     tr.innerHTML = `
       <td>${esc(r.name || 'Anonimno')}</td>
       <td>${esc(r.email) || '—'}</td>
       <td>${esc(r.title) || '—'}</td>
-      <td style="max-width:280px;">${esc(r.story)}</td>
+      <td style="max-width:280px;">${storyCell}</td>
       <td>${isAdmin ? 'Marija' : 'Korisnik'}</td>
       <td><span class="badge ${r.status}">${r.status}</span></td>
       <td>${fmtDate(r.created_at)}</td>
@@ -577,6 +580,16 @@ window.deleteTestimony = async function (id) {
   await api('/api/admin/testimonies/' + id, { method: 'DELETE' });
   loadTestimonies();
 };
+function setTestimonyMode(mode) {
+  const isPdf = mode === 'pdf';
+  document.getElementById('adminTestModePdf').checked = isPdf;
+  document.getElementById('adminTestModeText').checked = !isPdf;
+  document.getElementById('adminTestStoryWrap').style.display = isPdf ? 'none' : '';
+  document.getElementById('adminTestPdfWrap').style.display = isPdf ? '' : 'none';
+}
+document.getElementById('adminTestModeText').addEventListener('change', () => setTestimonyMode('text'));
+document.getElementById('adminTestModePdf').addEventListener('change', () => setTestimonyMode('pdf'));
+
 window.editTestimony = function (id) {
   const r = window._testimonyRows.find((x) => x.id === id);
   if (!r) return;
@@ -589,6 +602,9 @@ window.editTestimony = function (id) {
   document.getElementById('adminTestCancelBtn').style.display = 'inline-flex';
   document.getElementById('adminTestImageFile').value = '';
   setImagePreview('adminTest', r.image_url);
+  document.getElementById('adminTestPdfFile').value = '';
+  setPdfStatus('adminTest', r.pdf_url);
+  setTestimonyMode(r.pdf_url ? 'pdf' : 'text');
   window.scrollTo(0, 0);
 };
 document.getElementById('adminTestCancelBtn').addEventListener('click', () => resetTestimonyForm());
@@ -600,6 +616,9 @@ function resetTestimonyForm() {
   document.getElementById('adminTestCancelBtn').style.display = 'none';
   document.getElementById('adminTestImageFile').value = '';
   setImagePreview('adminTest', '');
+  document.getElementById('adminTestPdfFile').value = '';
+  setPdfStatus('adminTest', '');
+  setTestimonyMode('text');
 }
 document.getElementById('adminTestImageFile').addEventListener('change', async (e) => {
   const file = e.target.files[0];
@@ -618,17 +637,33 @@ document.getElementById('adminTestImageRemoveBtn').addEventListener('click', () 
   document.getElementById('adminTestImageFile').value = '';
   setImagePreview('adminTest', '');
 });
+document.getElementById('adminTestPdfFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('adminTestMsg');
+  try {
+    msg.innerHTML = '<div class="msg">Uploadam PDF...</div>';
+    const url = await uploadPdf(file);
+    setPdfStatus('adminTest', url);
+    msg.innerHTML = '';
+  } catch (err) {
+    msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+});
 document.getElementById('adminTestSaveBtn').addEventListener('click', async () => {
   const id = document.getElementById('adminTestId').value;
+  const isPdfMode = document.getElementById('adminTestModePdf').checked;
   const body = {
     name: document.getElementById('adminTestName').value.trim(),
     title: document.getElementById('adminTestTitle').value.trim(),
-    story: document.getElementById('adminTestStory').value.trim(),
+    story: isPdfMode ? '' : document.getElementById('adminTestStory').value.trim(),
     image_url: document.getElementById('adminTestImageUrl').value,
+    pdf_url: isPdfMode ? document.getElementById('adminTestPdfUrl').value : '',
     published: document.getElementById('adminTestPublished').checked,
   };
   const msg = document.getElementById('adminTestMsg');
-  if (!body.story) { msg.innerHTML = '<div class="msg err">Priča je obavezna.</div>'; return; }
+  if (isPdfMode && !body.pdf_url) { msg.innerHTML = '<div class="msg err">Uploadaj PDF datoteku.</div>'; return; }
+  if (!isPdfMode && !body.story) { msg.innerHTML = '<div class="msg err">Priča je obavezna.</div>'; return; }
   try {
     if (id) await api('/api/admin/testimonies/' + id, { method: 'PUT', body: JSON.stringify(body) });
     else await api('/api/admin/testimonies', { method: 'POST', body: JSON.stringify(body) });

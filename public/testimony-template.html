@@ -116,8 +116,12 @@
               ? `<img src="${escHtml(t.image_url)}" alt="${escHtml(heading)}" style="width:100%; max-height:420px; object-fit:cover; border-radius:8px; display:block;">`
               : `<div class="ph" style="min-height:260px;"><span>Fotografija uz svjedočanstvo</span></div>`)
           : '';
-        const paragraphs = (t.story || '').split(/\n+/).filter(Boolean);
-        document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
+        if (t.pdf_url) {
+          document.getElementById('testContent').innerHTML = `<p>Ovo svjedočanstvo dostupno je u PDF obliku.</p><p><a href="${escHtml(t.pdf_url)}" target="_blank" rel="noopener" class="btn btn-gold">Otvori PDF →</a></p>`;
+        } else {
+          const paragraphs = (t.story || '').split(/\n+/).filter(Boolean);
+          document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
+        }
 
         document.getElementById('testLoading').style.display = 'none';
         document.getElementById('testHero').style.display = '';
