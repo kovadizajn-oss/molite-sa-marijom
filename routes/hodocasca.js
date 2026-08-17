@@ -9,6 +9,13 @@ router.get('/hodocasca', async (req, res) => {
   res.json(rows);
 });
 
+router.get('/hodocasca/:id', async (req, res) => {
+  const { rows } = await db.query('SELECT * FROM hodocasca WHERE id = $1 AND published = 1', [req.params.id]);
+  const row = rows[0];
+  if (!row) return res.status(404).json({ error: 'Hodočašće nije pronađeno.' });
+  res.json(row);
+});
+
 router.get('/admin/hodocasca', requireAdmin, async (req, res) => {
   const { rows } = await db.query('SELECT * FROM hodocasca ORDER BY created_at DESC');
   res.json(rows);

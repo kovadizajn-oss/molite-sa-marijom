@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hodočašće — Molite s Marijom</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Molite s Marijom">
+<meta property="og:title" content="Hodočašće — Molite s Marijom">
+<meta property="og:description" content="Pridružite nam se na hodočašću u sveta mjesta.">
+<meta property="og:image" content="https://www.molitesmarijom.com/images/hero-molitva.jpg">
+<meta property="og:url" content="https://www.molitesmarijom.com/hodocasce.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hodočašće — Molite s Marijom">
+<meta name="twitter:description" content="Pridružite nam se na hodočašću u sveta mjesta.">
+<meta name="twitter:image" content="https://www.molitesmarijom.com/images/hero-molitva.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo">MOLITE S<span>Marijom</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Izbornik" aria-expanded="false">☰</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="/">Početna</a>
+      <a href="o-meni.html">O meni</a>
+      <a href="svjedocanstva.html">Svjedočanstva i knjige</a>
+      <a href="sos-molitveni-zid.html">SOS – Molitveni zid</a>
+      <a href="blog.html">Blog</a>
+      <a href="hodocasca.html" class="active">Hodočašća</a>
+      <a href="kako-moliti.html">Kako moliti</a>
+      <a href="marija-odgovara.html">Marija odgovara</a>
+    </nav>
+  </div>
+</header>
+<script>
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mainNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var isOpen = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    nav.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+</script>
+
+<section class="page-hero" id="hodoHero" style="display:none;">
+  <div class="container">
+    <h1 id="hodoTitle"></h1>
+    <p class="lead" id="hodoMeta"></p>
+  </div>
+</section>
+
+<section id="hodoLoading">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <p style="color:var(--muted);">Učitavanje hodočašća...</p>
+  </div>
+</section>
+
+<section id="hodoBody" style="display:none;">
+  <div class="container" style="max-width:760px;">
+    <div id="hodoImage" style="margin-bottom:32px;"></div>
+    <div id="hodoContent" style="font-size:1.05rem; line-height:1.9; color:var(--ink);"></div>
+    <div style="margin-top:40px;">
+      <a href="hodocasca.html" class="btn btn-outline">← Natrag na hodočašća</a>
+    </div>
+  </div>
+</section>
+
+<section id="hodoNotFound" style="display:none;">
+  <div class="container" style="text-align:center; padding:40px 0;">
+    <h2>Hodočašće nije pronađeno</h2>
+    <p style="color:var(--muted); margin-bottom:24px;">Možda je uklonjeno ili link nije ispravan.</p>
+    <a href="hodocasca.html" class="btn btn-gold">Natrag na hodočašća</a>
+  </div>
+</section>
+
+<script>
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) {
+    document.getElementById('hodoLoading').style.display = 'none';
+    document.getElementById('hodoNotFound').style.display = '';
+  } else {
+    fetch('/api/hodocasca/' + id)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then((h) => {
+        document.title = h.title + ' — Molite s Marijom';
+        document.getElementById('hodoTitle').textContent = h.title + (h.location ? ', ' + h.location : '');
+        document.getElementById('hodoMeta').textContent = h.date_range || '';
+        document.getElementById('hodoImage').innerHTML = h.image_url
+          ? `<img src="${escHtml(h.image_url)}" alt="${escHtml(h.image_note || h.title)}" style="width:100%; height:auto; max-height:640px; object-fit:contain; border-radius:8px; display:block; margin:0 auto;">`
+          : `<div class="ph" style="min-height:260px;"><span>${escHtml(h.image_note || 'Slika hodočašća')}</span></div>`;
+        const paragraphs = (h.description || '').split(/\n+/).filter(Boolean);
+        document.getElementById('hodoContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '';
+
+        document.getElementById('hodoLoading').style.display = 'none';
+        document.getElementById('hodoHero').style.display = '';
+        document.getElementById('hodoBody').style.display = '';
+      })
+      .catch(() => {
+        document.getElementById('hodoLoading').style.display = 'none';
+        document.getElementById('hodoNotFound').style.display = '';
+      });
+  }
+</script>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-banner">✝ U Kristu smo jedno srce, jedna molitva, jedna nada. ✝</p>
+    <div class="footer-grid">
+      <div>
+        <h4>Brzi linkovi</h4>
+        <ul class="footer-links">
+          <li><a href="/">Početna</a></li>
+          <li><a href="o-meni.html">O meni</a></li>
+          <li><a href="svjedocanstva.html">Svjedočanstva i knjige</a></li>
+          <li><a href="sos-molitveni-zid.html">SOS – Molitveni zid</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Sadržaj</h4>
+        <ul class="footer-links">
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="hodocasca.html">Hodočašća</a></li>
+          <li><a href="kako-moliti.html">Kako moliti</a></li>
+          <li><a href="marija-odgovara.html">Marija odgovara</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pratite me</h4>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="https://www.youtube.com/@molite-sa-Marijom" aria-label="YouTube" target="_blank" rel="noopener">▶</a>
+          <a href="#" aria-label="Email">✉</a>
+        </div>
+        <p class="footer-verse">"Gdje su dvojica ili trojica sabrana u moje ime, tu sam i ja među njima." – Matej 18,20</p>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>✉ molitesamarijom@gmail.com<br>za molitvene nakane i razgovor</p>
+        <a href="marija-odgovara.html" class="btn btn-gold" style="margin-top:10px;">Kontaktiraj me 🤍</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Molite s Marijom. Sva prava pridržana.</span>
+      <span>Izrađeno s ljubavlju i molitvom. 🤍</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

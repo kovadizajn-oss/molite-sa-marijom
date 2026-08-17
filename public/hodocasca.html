@@ -148,6 +148,12 @@
     }
   }
 
+  function truncate(s, max) {
+    const str = String(s || '');
+    if (str.length <= max) return str;
+    return str.slice(0, max).replace(/\s+\S*$/, '') + '…';
+  }
+
   fetch('/api/hodocasca')
     .then((r) => r.json())
     .then((rows) => {
@@ -157,16 +163,17 @@
         return;
       }
       grid.innerHTML = rows.map((r) => `
-        <div class="card">
+        <a href="hodocasce.html?id=${r.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
           ${r.image_url
             ? `<img src="${escHtml(r.image_url)}" alt="${escHtml(r.image_note || r.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
             : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(r.image_note || 'Slika hodočašća')}</span></div>`}
           <div class="card-body">
             <p style="color:var(--gold-dark); font-size:0.78rem; font-weight:500;">${escHtml(r.date_range)}</p>
             <h3>${escHtml(r.title)}${r.location ? ', ' + escHtml(r.location) : ''}</h3>
-            <p>${escHtml(r.description)}</p>
+            <p>${escHtml(truncate(r.description, 140))}</p>
+            <span class="card-link">Pročitaj više →</span>
           </div>
-        </div>
+        </a>
       `).join('');
       setupCarousel(grid, document.getElementById('hodoPrev'), document.getElementById('hodoNext'), document.getElementById('hodoDots'));
     })

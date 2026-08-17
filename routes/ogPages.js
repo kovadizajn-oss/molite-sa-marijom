@@ -103,4 +103,39 @@ router.get('/testimony.html', async (req, res) => {
   }
 });
 
+router.get('/hodocasce.html', async (req, res) => {
+  const id = req.query.id;
+  const template = fs.readFileSync(path.join(PUBLIC_DIR, 'hodocasce-template.html'), 'utf8');
+  const origin = req.protocol + '://' + req.get('host');
+
+  if (!id) {
+    res.set('Cache-Control', 'no-store');
+    return res.type('html').send(template);
+  }
+
+  try {
+    const { rows } = await db.query(
+      'SELECT title, location, date_range, description, image_url FROM hodocasca WHERE id = $1 AND published = 1',
+      [id]
+    );
+    const h = rows[0];
+    if (!h) {
+      res.set('Cache-Control', 'no-store');
+      return res.type('html').send(template);
+    }
+    const html = injectOgTags(template, {
+      title: h.title + (h.location ? ', ' + h.location : '') + ' — Molite s Marijom',
+      description: (h.description || 'Pridružite nam se na hodočašću u sveta mjesta.').slice(0, 160),
+      image: h.image_url || origin + '/images/hero-molitva.jpg',
+      url: origin + '/hodocasce.html?id=' + id,
+    });
+    res.set('Cache-Control', 'no-store');
+    res.type('html').send(html);
+  } catch (e) {
+    console.error('[og] /hodocasce.html id=' + id + ' -> GREŠKA:', e.message);
+    res.set('Cache-Control', 'no-store');
+    res.type('html').send(template);
+  }
+});
+
 module.exports = router;
