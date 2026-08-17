@@ -74,6 +74,9 @@
     <div class="grid grid-3" id="blogGrid">
       <p class="empty-msg">Učitavanje objava...</p>
     </div>
+    <div style="text-align:center; margin-top:36px;">
+      <button class="btn btn-outline" id="blogLoadMoreBtn" style="display:none;">Učitaj više</button>
+    </div>
   </div>
 </section>
 
@@ -111,6 +114,34 @@
     return `<div class="rating-summary"><span class="stars">${renderStars(r.average)}</span><span>${r.average.toFixed(1)} (${r.count})</span></div>`;
   }
 
+  const PAGE_SIZE = 6;
+  let shownCount = PAGE_SIZE;
+
+  function cardHtml(p, ratings) {
+    return `
+      <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+        ${p.image_url
+          ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
+          : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
+        <div class="card-body">
+          <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
+          <h3>${escHtml(p.title)}</h3>
+          <p>${escHtml(p.excerpt || (p.content || '').slice(0, 120))}</p>
+          ${ratingHtml(ratings[p.id])}
+          <span class="card-link">Pročitaj više →</span>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderBlogPage(posts, ratings) {
+    const grid = document.getElementById('blogGrid');
+    const loadMoreBtn = document.getElementById('blogLoadMoreBtn');
+    const visible = posts.slice(0, shownCount);
+    grid.innerHTML = visible.map((p) => cardHtml(p, ratings)).join('');
+    loadMoreBtn.style.display = shownCount < posts.length ? 'inline-flex' : 'none';
+  }
+
   Promise.all([
     fetch('/api/blog').then((r) => r.json()),
     fetch('/api/blog-ratings/summary').then((r) => r.json()).catch(() => ({})),
@@ -121,20 +152,11 @@
         grid.innerHTML = '<p style="color:var(--muted);">Trenutno nema objava. Vratite se uskoro!</p>';
         return;
       }
-      grid.innerHTML = posts.map((p) => `
-        <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
-          ${p.image_url
-            ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
-            : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
-          <div class="card-body">
-            <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
-            <h3>${escHtml(p.title)}</h3>
-            <p>${escHtml(p.excerpt || (p.content || '').slice(0, 120))}</p>
-            ${ratingHtml(ratings[p.id])}
-            <span class="card-link">Pročitaj više →</span>
-          </div>
-        </a>
-      `).join('');
+      renderBlogPage(posts, ratings);
+      document.getElementById('blogLoadMoreBtn').addEventListener('click', () => {
+        shownCount += PAGE_SIZE;
+        renderBlogPage(posts, ratings);
+      });
     })
     .catch(() => {
       document.getElementById('blogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
