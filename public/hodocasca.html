@@ -65,9 +65,14 @@
     <div class="section-head">
       <div><h2>Nadolazeća hodočašća</h2><div class="divider"></div></div>
     </div>
-    <div class="grid grid-3" id="hodoGrid">
-      <p style="color:var(--muted);">Učitavanje hodočašća...</p>
+    <div class="carousel-wrap">
+      <button class="carousel-btn prev" id="hodoPrev" aria-label="Prethodno">‹</button>
+      <div class="carousel-track" id="hodoGrid">
+        <p style="color:var(--muted);">Učitavanje hodočašća...</p>
+      </div>
+      <button class="carousel-btn next" id="hodoNext" aria-label="Sljedeće">›</button>
     </div>
+    <div class="carousel-dots" id="hodoDots"></div>
   </div>
 </section>
 
@@ -75,6 +80,74 @@
   function escHtml(s) {
     return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
+
+  // Vodoravni carousel: strelice lijevo/desno (skriveno na mobitelu, ostaje swipe) +
+  // automatsko klizanje svakih 5s dok korisnik prvi put ne klikne/skrola (onda se auto zaustavi),
+  // plus dots ispod (svaka "stranica" = 3 kartice), koji se sinkaju sa stvarnom scroll pozicijom.
+  const PER_PAGE = 3;
+  function setupCarousel(track, prevBtn, nextBtn, dotsEl) {
+    const cards = track ? Array.from(track.querySelectorAll('.card')) : [];
+    if (!track || !cards.length) {
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+      if (dotsEl) dotsEl.innerHTML = '';
+      return;
+    }
+    function cardStep() {
+      const gap = parseFloat(getComputedStyle(track).gap) || 0;
+      return cards[0].getBoundingClientRect().width + gap;
+    }
+    function scrollNext() {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      if (track.scrollLeft >= maxScroll - 4) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: cardStep(), behavior: 'smooth' });
+      }
+    }
+    function scrollPrev() {
+      track.scrollBy({ left: -cardStep(), behavior: 'smooth' });
+    }
+    let autoTimer = setInterval(scrollNext, 5000);
+    function stopAuto() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+    if (prevBtn) prevBtn.addEventListener('click', () => { scrollPrev(); stopAuto(); });
+    if (nextBtn) nextBtn.addEventListener('click', () => { scrollNext(); stopAuto(); });
+    track.addEventListener('wheel', stopAuto, { passive: true });
+    track.addEventListener('touchstart', stopAuto, { passive: true });
+    track.addEventListener('pointerdown', stopAuto);
+
+    // --- dots (stranice po PER_PAGE kartica) ---
+    const pageCount = Math.ceil(cards.length / PER_PAGE);
+    if (dotsEl && pageCount > 1) {
+      dotsEl.innerHTML = '';
+      for (let i = 0; i < pageCount; i++) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', 'Stranica ' + (i + 1));
+        dot.addEventListener('click', () => {
+          track.scrollTo({ left: cardStep() * PER_PAGE * i, behavior: 'smooth' });
+          stopAuto();
+        });
+        dotsEl.appendChild(dot);
+      }
+      const dots = Array.from(dotsEl.children);
+      function syncDots() {
+        const maxScroll = track.scrollWidth - track.clientWidth;
+        const ratio = maxScroll > 0 ? track.scrollLeft / maxScroll : 0;
+        const active = Math.min(pageCount - 1, Math.round(ratio * (pageCount - 1)));
+        dots.forEach((d, i) => d.classList.toggle('active', i === active));
+      }
+      track.addEventListener('scroll', () => {
+        window.requestAnimationFrame(syncDots);
+      }, { passive: true });
+      syncDots();
+    } else if (dotsEl) {
+      dotsEl.innerHTML = '';
+    }
+  }
+
   fetch('/api/hodocasca')
     .then((r) => r.json())
     .then((rows) => {
@@ -95,6 +168,7 @@
           </div>
         </div>
       `).join('');
+      setupCarousel(grid, document.getElementById('hodoPrev'), document.getElementById('hodoNext'), document.getElementById('hodoDots'));
     })
     .catch(() => {
       document.getElementById('hodoGrid').innerHTML = '<p style="color:var(--muted);">Hodočašća se trenutno ne mogu učitati.</p>';
