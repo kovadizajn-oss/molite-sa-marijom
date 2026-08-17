@@ -120,6 +120,15 @@ async function initDb() {
       published INTEGER DEFAULT 1,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS blog_ratings (
+      id SERIAL PRIMARY KEY,
+      post_id INTEGER NOT NULL,
+      visitor_hash TEXT NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(post_id, visitor_hash)
+    );
   `);
 
   // Migracije za baze koje su možda nastale prije nego su ove kolone dodane

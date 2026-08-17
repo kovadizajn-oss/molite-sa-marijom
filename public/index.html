@@ -130,9 +130,20 @@
     function escHtml(s) {
       return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
-    fetch('/api/blog')
-      .then((r) => r.json())
-      .then((posts) => {
+    function renderStars(average) {
+      const full = Math.round(average);
+      return '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5 - full);
+    }
+    function ratingHtml(r) {
+      if (!r || !r.count) return '';
+      return `<div class="rating-summary"><span class="stars">${renderStars(r.average)}</span><span>${r.average.toFixed(1)} (${r.count})</span></div>`;
+    }
+
+    Promise.all([
+      fetch('/api/blog').then((r) => r.json()),
+      fetch('/api/blog-ratings/summary').then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([posts, ratings]) => {
         const grid = document.getElementById('homeBlogGrid');
         const latest = posts.slice(0, 3);
         if (!latest.length) {
@@ -147,6 +158,7 @@
             <div class="card-body">
               <h3>${escHtml(p.title)}</h3>
               <p>${escHtml(p.excerpt || (p.content || '').slice(0, 100))}</p>
+              ${ratingHtml(ratings[p.id])}
               <span class="card-link">Pročitaj više →</span>
             </div>
           </a>

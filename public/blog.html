@@ -87,9 +87,20 @@
     if (isNaN(d)) return '';
     return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
-  fetch('/api/blog')
-    .then((r) => r.json())
-    .then((posts) => {
+  function renderStars(average) {
+    const full = Math.round(average);
+    return '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5 - full);
+  }
+  function ratingHtml(r) {
+    if (!r || !r.count) return '';
+    return `<div class="rating-summary"><span class="stars">${renderStars(r.average)}</span><span>${r.average.toFixed(1)} (${r.count})</span></div>`;
+  }
+
+  Promise.all([
+    fetch('/api/blog').then((r) => r.json()),
+    fetch('/api/blog-ratings/summary').then((r) => r.json()).catch(() => ({})),
+  ])
+    .then(([posts, ratings]) => {
       const grid = document.getElementById('blogGrid');
       if (!posts.length) {
         grid.innerHTML = '<p style="color:var(--muted);">Trenutno nema objava. Vratite se uskoro!</p>';
@@ -104,6 +115,7 @@
             <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
             <h3>${escHtml(p.title)}</h3>
             <p>${escHtml(p.excerpt || (p.content || '').slice(0, 120))}</p>
+            ${ratingHtml(ratings[p.id])}
             <span class="card-link">Pročitaj više →</span>
           </div>
         </a>

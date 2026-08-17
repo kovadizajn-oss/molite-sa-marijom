@@ -337,6 +337,48 @@ section{ padding: 64px 0; }
   .carousel-btn{ display: none; }
 }
 
+/* --- Ocjena bloga zvjezdicama (1-5, anonimno, bez komentara) --- */
+.rating-box{
+  margin-top: 48px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--cream-2);
+  text-align: center;
+}
+.rating-box h3{ margin: 0 0 4px; font-size: 1.05rem; }
+.rating-box .rating-sub{ color: var(--muted); font-size: 0.85rem; margin: 0 0 16px; }
+.star-picker{
+  display: inline-flex;
+  gap: 6px;
+  direction: ltr;
+}
+.star-picker button{
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--line);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.star-picker button.filled{ color: var(--gold); }
+.star-picker button:hover{ transform: scale(1.15); }
+.star-picker.rated button{ cursor: default; }
+.star-picker.rated button:hover{ transform: none; }
+.rating-thanks{ color: var(--gold-dark); font-size: 0.9rem; margin-top: 12px; min-height: 1.2em; }
+
+.rating-summary{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.rating-summary .stars{ color: var(--gold); letter-spacing: 1px; }
+
 /* feature icon card */
 .feature{
   background: var(--paper);

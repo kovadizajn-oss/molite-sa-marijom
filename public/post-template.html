@@ -69,6 +69,20 @@
   <div class="container" style="max-width:760px;">
     <div id="postImage" style="margin-bottom:32px;"></div>
     <div id="postContent" style="font-size:1.05rem; line-height:1.9; color:var(--ink);"></div>
+
+    <div class="rating-box" id="ratingBox">
+      <h3>Kako vam se svidjela ova objava?</h3>
+      <p class="rating-sub" id="ratingSub">Ocijenite anonimno, bez potrebe za komentarom.</p>
+      <div class="star-picker" id="starPicker">
+        <button type="button" data-value="1" aria-label="1 zvjezdica">★</button>
+        <button type="button" data-value="2" aria-label="2 zvjezdice">★</button>
+        <button type="button" data-value="3" aria-label="3 zvjezdice">★</button>
+        <button type="button" data-value="4" aria-label="4 zvjezdice">★</button>
+        <button type="button" data-value="5" aria-label="5 zvjezdica">★</button>
+      </div>
+      <p class="rating-thanks" id="ratingThanks"></p>
+    </div>
+
     <div style="margin-top:40px;">
       <a href="blog.html" class="btn btn-outline">← Natrag na blog</a>
     </div>
@@ -119,11 +133,74 @@
         document.getElementById('postLoading').style.display = 'none';
         document.getElementById('postHero').style.display = '';
         document.getElementById('postBody').style.display = '';
+
+        initRating(id);
       })
       .catch(() => {
         document.getElementById('postLoading').style.display = 'none';
         document.getElementById('postNotFound').style.display = '';
       });
+  }
+
+  function initRating(postId) {
+    const picker = document.getElementById('starPicker');
+    const sub = document.getElementById('ratingSub');
+    const thanks = document.getElementById('ratingThanks');
+    const buttons = Array.from(picker.querySelectorAll('button'));
+
+    function paint(upToValue) {
+      buttons.forEach((b) => {
+        b.classList.toggle('filled', Number(b.dataset.value) <= upToValue);
+      });
+    }
+
+    function lock(value) {
+      picker.classList.add('rated');
+      buttons.forEach((b) => { b.disabled = true; });
+      paint(value);
+      sub.textContent = 'Hvala što ste ocijenili ovu objavu.';
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('mouseenter', () => {
+        if (picker.classList.contains('rated')) return;
+        paint(Number(btn.dataset.value));
+      });
+      btn.addEventListener('mouseleave', () => {
+        if (picker.classList.contains('rated')) return;
+        paint(0);
+      });
+      btn.addEventListener('click', () => {
+        if (picker.classList.contains('rated')) return;
+        const value = Number(btn.dataset.value);
+        buttons.forEach((b) => { b.disabled = true; });
+        fetch('/api/blog/' + postId + '/rating', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: value }),
+        })
+          .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+          .then(({ ok, data }) => {
+            if (!ok) {
+              buttons.forEach((b) => { b.disabled = false; });
+              thanks.textContent = 'Ocjena nije spremljena, pokušajte ponovno.';
+              return;
+            }
+            lock(value);
+          })
+          .catch(() => {
+            buttons.forEach((b) => { b.disabled = false; });
+            thanks.textContent = 'Ocjena nije spremljena, pokušajte ponovno.';
+          });
+      });
+    });
+
+    fetch('/api/blog/' + postId + '/rating')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.myRating) lock(data.myRating);
+      })
+      .catch(() => {});
   }
 </script>
 
