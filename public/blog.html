@@ -77,6 +77,21 @@
   </div>
 </section>
 
+<section style="background:var(--cream-2);">
+  <div class="container" style="max-width:600px;">
+    <div class="form-box">
+      <h2 style="text-align:center;">Imate prijedlog za blog?</h2>
+      <p style="color:var(--brown-2); font-size:0.9rem; text-align:center; margin-bottom:20px;">Recite nam o čemu biste voljeli čitati — anonimno, bez obveze ostavljanja podataka.</p>
+      <form id="suggestionForm">
+        <input class="field" type="text" id="suggestionName" placeholder="Vaše ime (opcionalno)">
+        <textarea class="field" id="suggestionMessage" placeholder="Vaš prijedlog ili želja za blog..." required></textarea>
+        <button class="btn btn-gold btn-block" type="submit">Pošalji prijedlog</button>
+        <p id="suggestionFormMsg" style="margin-top:12px; font-size:0.88rem; text-align:center;"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
 <script>
   function escHtml(s) {
     return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -124,6 +139,29 @@
     .catch(() => {
       document.getElementById('blogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
     });
+
+  document.getElementById('suggestionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('suggestionName').value.trim();
+    const message = document.getElementById('suggestionMessage').value.trim();
+    const msgEl = document.getElementById('suggestionFormMsg');
+    if (!message) { msgEl.style.color = '#a34a3c'; msgEl.textContent = 'Upišite svoj prijedlog.'; return; }
+    try {
+      const res = await fetch('/api/blog-suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Greška pri slanju.');
+      msgEl.style.color = 'var(--gold-dark)';
+      msgEl.textContent = data.message;
+      document.getElementById('suggestionForm').reset();
+    } catch (err) {
+      msgEl.style.color = '#a34a3c';
+      msgEl.textContent = err.message;
+    }
+  });
 </script>
 
 <footer class="site-footer">

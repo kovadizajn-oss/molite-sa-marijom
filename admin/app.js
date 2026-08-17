@@ -676,6 +676,39 @@ window.deleteQuestion = async function (id) {
   loadQuestions();
 };
 
+// ================= BLOG SUGGESTIONS =================
+async function loadBlogSuggestions() {
+  const rows = await api('/api/admin/blog-suggestions');
+  const tbody = document.querySelector('#blogSuggestionsTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('blogSuggestionsEmpty').style.display = rows.length ? 'none' : 'block';
+  rows.forEach((r) => {
+    const isNew = r.status === 'new';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(r.name) || 'Anonimno'}</td>
+      <td style="max-width:360px;">${esc(r.message)}</td>
+      <td><span class="badge ${isNew ? 'pending' : 'published'}">${isNew ? 'novo' : 'pročitano'}</span></td>
+      <td>${fmtDate(r.created_at)}</td>
+      <td class="actions">
+        ${isNew
+          ? `<button class="btn secondary small" onclick="markSuggestionRead(${r.id})">Označi pročitano</button>`
+          : ''}
+        <button class="btn danger small" onclick="deleteSuggestion(${r.id})">Obriši</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+window.markSuggestionRead = async function (id) {
+  await api('/api/admin/blog-suggestions/' + id, { method: 'PATCH', body: JSON.stringify({ status: 'read' }) });
+  loadBlogSuggestions();
+};
+window.deleteSuggestion = async function (id) {
+  if (!confirm('Obrisati ovaj prijedlog?')) return;
+  await api('/api/admin/blog-suggestions/' + id, { method: 'DELETE' });
+  loadBlogSuggestions();
+};
+
 // ================= DAILY THOUGHT =================
 async function loadDailyThoughts() {
   const rows = await api('/api/admin/daily-thoughts');
@@ -786,4 +819,5 @@ loadHodo();
 loadPrayers();
 loadTestimonies();
 loadQuestions();
+loadBlogSuggestions();
 loadDailyThoughts();

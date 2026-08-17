@@ -129,6 +129,14 @@ async function initDb() {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE(post_id, visitor_hash)
     );
+
+    CREATE TABLE IF NOT EXISTS blog_suggestions (
+      id SERIAL PRIMARY KEY,
+      name TEXT DEFAULT '',
+      message TEXT NOT NULL,
+      status TEXT DEFAULT 'new',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
   // Migracije za baze koje su možda nastale prije nego su ove kolone dodane
