@@ -74,4 +74,40 @@ router.get('/admin/analytics/pages', requireAdmin, async (req, res) => {
   res.json(result);
 });
 
+// --- Admin: čitanost svake blog objave (ukupno pregleda + jedinstveni čitatelji) ---
+// Jedinstveni čitatelji broje se preko istog anonimnog kolačića kao i ostala analitika,
+// tako da isti čovjek koji je isti post otvorio 5 puta broji se kao 1 čitatelj, ali 5 pregleda.
+router.get('/admin/analytics/blog', requireAdmin, async (req, res) => {
+  const [posts, views] = await Promise.all([
+    db.query('SELECT id, title, published, views, created_at FROM blog_posts ORDER BY created_at DESC'),
+    db.query("SELECT path, visitor_hash FROM page_views WHERE path LIKE '/post.html?id=%'"),
+  ]);
+
+  const stats = {};
+  views.rows.forEach((v) => {
+    const match = String(v.path).match(/^\/post\.html\?id=(\d+)$/);
+    if (!match) return;
+    const id = match[1];
+    if (!stats[id]) stats[id] = { total: 0, visitors: new Set() };
+    stats[id].total += 1;
+    stats[id].visitors.add(v.visitor_hash);
+  });
+
+  const result = posts.rows
+    .map((p) => {
+      const s = stats[p.id];
+      return {
+        id: p.id,
+        title: p.title,
+        published: p.published,
+        created_at: p.created_at,
+        views: s ? s.total : 0,
+        unique_readers: s ? s.visitors.size : 0,
+      };
+    })
+    .sort((a, b) => b.views - a.views);
+
+  res.json(result);
+});
+
 module.exports = router;

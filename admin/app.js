@@ -93,6 +93,21 @@ async function loadAnalytics() {
       tr.innerHTML = `<td>${p.tag ? `<span class="badge">${esc(p.tag)}</span>` : ''}</td><td>${esc(p.label)}</td><td>${p.views}</td>`;
       tbody.appendChild(tr);
     });
+
+    const blogStats = await api('/api/admin/analytics/blog');
+    const blogTbody = document.querySelector('#blogAnalyticsTable tbody');
+    blogTbody.innerHTML = '';
+    document.getElementById('blogAnalyticsEmpty').style.display = blogStats.length ? 'none' : 'block';
+    blogStats.forEach((p) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(p.title)}</td>
+        <td><span class="badge ${p.published ? 'published' : 'pending'}">${p.published ? 'objavljeno' : 'skriveno'}</span></td>
+        <td>${p.views}</td>
+        <td>${p.unique_readers}</td>
+        <td>${fmtDate(p.created_at)}</td>`;
+      blogTbody.appendChild(tr);
+    });
   } catch (e) {
     // tiho — analitika ne smije rušiti ostatak panela
   }
