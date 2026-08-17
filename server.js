@@ -16,6 +16,7 @@ const analyticsRoutes = require('./routes/analytics');
 const customPrayersRoutes = require('./routes/customPrayers');
 const booksRoutes = require('./routes/books');
 const configRoutes = require('./routes/config');
+const ogPagesRoutes = require('./routes/ogPages');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -86,6 +87,10 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+// Dinamički og:/twitter: meta tagovi za pojedinačne objave/svjedočanstva (mora ići prije
+// express.static, inače bi static middleware uvijek poslužio nepromijenjeni post.html/testimony.html)
+app.use(ogPagesRoutes);
 
 // Statični fajlovi — javna stranica i admin panel
 app.use(express.static(path.join(__dirname, 'public')));
