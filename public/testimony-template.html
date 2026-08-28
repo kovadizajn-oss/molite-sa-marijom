@@ -93,6 +93,12 @@
     if (isNaN(d)) return '';
     return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
+  function applyInlineMarkdown(escaped) {
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+  }
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -120,7 +126,7 @@
           document.getElementById('testContent').innerHTML = `<p>Ovo svjedočanstvo dostupno je u PDF obliku.</p><p><a href="${escHtml(t.pdf_url)}" target="_blank" rel="noopener" class="btn btn-gold">Otvori PDF →</a></p>`;
         } else {
           const paragraphs = (t.story || '').split(/\n+/).filter(Boolean);
-          document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
+          document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par))}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
         }
 
         document.getElementById('testLoading').style.display = 'none';

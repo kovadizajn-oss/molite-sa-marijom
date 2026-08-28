@@ -58,6 +58,11 @@ td.actions .btn{margin-right:6px;margin-bottom:4px;}
 .form-grid .full{grid-column:1/-1;}
 label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;}
 textarea.field{min-height:90px;resize:vertical;}
+
+.rt-toolbar{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.rt-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;}
+.rt-btn:hover{border-color:var(--gold);color:var(--gold-dark);background:var(--cream);}
+.rt-hint{font-size:.72rem;color:var(--muted);margin-left:4px;}
 .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
 .msg{padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:16px;}
 .msg.ok{background:#dcebd4;color:var(--ok);}

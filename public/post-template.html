@@ -107,6 +107,15 @@
     if (isNaN(d)) return '';
     return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
+  // Pretvara jednostavne oznake iz admin panela (**podebljano**, *kurziv*, ++podcrtano++) u HTML.
+  // Tekst se prvo escapea pa se tek onda dodaju NAŠI tagovi, pa je uvijek sigurno bez obzira
+  // na to što je izvorno upisano.
+  function applyInlineMarkdown(escaped) {
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+  }
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -128,7 +137,7 @@
           ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:auto; max-height:640px; object-fit:contain; border-radius:8px; display:block; margin:0 auto;">`
           : `<div class="ph" style="min-height:260px;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`;
         const paragraphs = (p.content || p.excerpt || '').split(/\n+/).filter(Boolean);
-        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${escHtml(par)}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
+        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par))}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
 
         document.getElementById('postLoading').style.display = 'none';
         document.getElementById('postHero').style.display = '';

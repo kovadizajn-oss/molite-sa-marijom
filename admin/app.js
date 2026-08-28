@@ -26,6 +26,49 @@ async function api(path, opts = {}) {
   return data;
 }
 
+// --- Jednostavno formatiranje teksta (bold/italic/underline) u textarea poljima ---
+// Ne koristimo contenteditable/execCommand (nepouzdano, teško za spremanje) nego jednostavne
+// markdown-nalik oznake (**podebljano**, *kurziv*, ++podcrtano++) koje gumbi upisuju oko
+// selektiranog teksta. Na javnim stranicama se te oznake pretvaraju natrag u HTML (vidi
+// applyInlineMarkdown u post-template.html, hodocasce-template.html, testimony-template.html
+// i molitve.html) — tekst se prvo escapea pa tek onda formatira, pa je uvijek sigurno.
+function wrapSelection(textarea, before, after) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const value = textarea.value;
+  const selected = value.slice(start, end) || 'tekst';
+  textarea.value = value.slice(0, start) + before + selected + after + value.slice(end);
+  textarea.focus();
+  textarea.selectionStart = start + before.length;
+  textarea.selectionEnd = start + before.length + selected.length;
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+function initRichToolbar(textareaId) {
+  const textarea = document.getElementById(textareaId);
+  if (!textarea || textarea.dataset.rtInit) return;
+  textarea.dataset.rtInit = '1';
+  const toolbar = document.createElement('div');
+  toolbar.className = 'rt-toolbar';
+  [
+    { label: '<b>B</b>', title: 'Podebljano', before: '**', after: '**' },
+    { label: '<i>I</i>', title: 'Kurziv', before: '*', after: '*' },
+    { label: '<u>U</u>', title: 'Podcrtano', before: '++', after: '++' },
+  ].forEach((b) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'rt-btn';
+    btn.title = b.title;
+    btn.innerHTML = b.label;
+    btn.addEventListener('click', () => wrapSelection(textarea, b.before, b.after));
+    toolbar.appendChild(btn);
+  });
+  const hint = document.createElement('span');
+  hint.className = 'rt-hint';
+  hint.textContent = 'označite tekst pa kliknite';
+  toolbar.appendChild(hint);
+  textarea.parentNode.insertBefore(toolbar, textarea);
+}
+
 // --- Tabovi ---
 document.querySelectorAll('.tab-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -871,3 +914,8 @@ loadTestimonies();
 loadQuestions();
 loadBlogSuggestions();
 loadDailyThoughts();
+
+initRichToolbar('blogContent');
+initRichToolbar('hodoDescription');
+initRichToolbar('adminTestStory');
+initRichToolbar('molitvaText');

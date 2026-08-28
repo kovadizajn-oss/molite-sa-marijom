@@ -758,11 +758,17 @@
     function escHtml(s) {
       return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
+    function applyInlineMarkdown(escaped) {
+      return escaped
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+    }
     function renderPrayerText(text) {
       return String(text || '')
         .split(/\n\s*\n/)
         .filter(Boolean)
-        .map((para) => `<p>${escHtml(para).replace(/\n/g, '<br>')}</p>`)
+        .map((para) => `<p>${applyInlineMarkdown(escHtml(para).replace(/\n/g, '<br>'))}</p>`)
         .join('');
     }
     fetch('/api/molitve')
