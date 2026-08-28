@@ -136,8 +136,11 @@
         document.getElementById('postImage').innerHTML = p.image_url
           ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:auto; max-height:640px; object-fit:contain; border-radius:8px; display:block; margin:0 auto;">`
           : `<div class="ph" style="min-height:260px;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`;
-        const paragraphs = (p.content || p.excerpt || '').split(/\n+/).filter(Boolean);
-        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par))}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
+        // Prazan red = novi odlomak (razmak); jedan Enter unutar odlomka = samo prijelom retka
+        // (<br>, bez velikog razmaka) — tako npr. natuknice jedna ispod druge ne dobiju
+        // pretjerani razmak kao da su zasebni odlomci.
+        const paragraphs = (p.content || p.excerpt || '').split(/\n\s*\n/).filter(Boolean);
+        document.getElementById('postContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par).replace(/\n/g, '<br>'))}</p>`).join('') || '<p>' + escHtml(p.excerpt || '') + '</p>';
 
         document.getElementById('postLoading').style.display = 'none';
         document.getElementById('postHero').style.display = '';

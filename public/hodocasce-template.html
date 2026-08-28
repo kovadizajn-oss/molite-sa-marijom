@@ -113,8 +113,8 @@
         document.getElementById('hodoImage').innerHTML = h.image_url
           ? `<img src="${escHtml(h.image_url)}" alt="${escHtml(h.image_note || h.title)}" style="width:100%; height:auto; max-height:640px; object-fit:contain; border-radius:8px; display:block; margin:0 auto;">`
           : `<div class="ph" style="min-height:260px;"><span>${escHtml(h.image_note || 'Slika hodočašća')}</span></div>`;
-        const paragraphs = (h.description || '').split(/\n+/).filter(Boolean);
-        document.getElementById('hodoContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par))}</p>`).join('') || '';
+        const paragraphs = (h.description || '').split(/\n\s*\n/).filter(Boolean);
+        document.getElementById('hodoContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par).replace(/\n/g, '<br>'))}</p>`).join('') || '';
 
         document.getElementById('hodoLoading').style.display = 'none';
         document.getElementById('hodoHero').style.display = '';

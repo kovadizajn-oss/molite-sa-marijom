@@ -125,8 +125,8 @@
         if (t.pdf_url) {
           document.getElementById('testContent').innerHTML = `<p>Ovo svjedočanstvo dostupno je u PDF obliku.</p><p><a href="${escHtml(t.pdf_url)}" target="_blank" rel="noopener" class="btn btn-gold">Otvori PDF →</a></p>`;
         } else {
-          const paragraphs = (t.story || '').split(/\n+/).filter(Boolean);
-          document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par))}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
+          const paragraphs = (t.story || '').split(/\n\s*\n/).filter(Boolean);
+          document.getElementById('testContent').innerHTML = paragraphs.map((par) => `<p>${applyInlineMarkdown(escHtml(par).replace(/\n/g, '<br>'))}</p>`).join('') || '<p>' + escHtml(t.story || '') + '</p>';
         }
 
         document.getElementById('testLoading').style.display = 'none';
