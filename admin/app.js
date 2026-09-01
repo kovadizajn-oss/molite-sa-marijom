@@ -157,6 +157,32 @@ async function loadAnalytics() {
 }
 
 // ================= BLOG =================
+// Fiksni popis kategorija za blog (isti popis koriste i admin panel i javna /blog.html stranica
+// za filtriranje). Jedna objava može imati više kategorija odjednom — spremaju se kao jedan
+// tekstualni string odvojen zarezima u postojećem "category" stupcu (bez potrebe za novom tablicom).
+const BLOG_CATEGORIES = ['Ljubav', 'Patnja', 'Molitva', 'Zlo i kušnje', 'Oprost', 'Samoća', 'Obitelj', 'Euharistija', 'Marija', 'Sveci', 'Duhovni rast', 'Smrt i vječnost', 'Život'];
+
+function initBlogCategoryChecks() {
+  const wrap = document.getElementById('blogCategoryChecks');
+  if (!wrap || wrap.dataset.init) return;
+  wrap.dataset.init = '1';
+  BLOG_CATEGORIES.forEach((cat) => {
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex;align-items:center;gap:6px;text-transform:none;font-weight:400;';
+    label.innerHTML = `<input type="checkbox" value="${esc(cat)}" style="width:auto;"> ${esc(cat)}`;
+    wrap.appendChild(label);
+  });
+}
+function getCheckedBlogCategories() {
+  return Array.from(document.querySelectorAll('#blogCategoryChecks input:checked')).map((c) => c.value).join(', ');
+}
+function setCheckedBlogCategories(str) {
+  const selected = String(str || '').split(',').map((s) => s.trim()).filter(Boolean);
+  document.querySelectorAll('#blogCategoryChecks input').forEach((c) => {
+    c.checked = selected.includes(c.value);
+  });
+}
+
 async function loadBlog() {
   const [rows, ratings] = await Promise.all([
     api('/api/admin/blog'),
@@ -190,7 +216,7 @@ window.editBlog = function (id) {
   document.getElementById('blogFormTitle').textContent = 'Uredi objavu';
   document.getElementById('blogId').value = r.id;
   document.getElementById('blogTitle').value = r.title;
-  document.getElementById('blogCategory').value = r.category;
+  setCheckedBlogCategories(r.category);
   document.getElementById('blogExcerpt').value = r.excerpt;
   document.getElementById('blogContent').value = r.content;
   document.getElementById('blogImageNote').value = r.image_note;
@@ -204,7 +230,8 @@ document.getElementById('blogCancelBtn').addEventListener('click', () => resetBl
 function resetBlogForm() {
   document.getElementById('blogFormTitle').textContent = 'Nova objava';
   document.getElementById('blogId').value = '';
-  ['blogTitle','blogCategory','blogExcerpt','blogContent','blogImageNote'].forEach((id) => document.getElementById(id).value = '');
+  ['blogTitle','blogExcerpt','blogContent','blogImageNote'].forEach((id) => document.getElementById(id).value = '');
+  setCheckedBlogCategories('');
   document.getElementById('blogPublished').checked = true;
   document.getElementById('blogCancelBtn').style.display = 'none';
   document.getElementById('blogImageFile').value = '';
@@ -231,7 +258,7 @@ document.getElementById('blogSaveBtn').addEventListener('click', async () => {
   const id = document.getElementById('blogId').value;
   const body = {
     title: document.getElementById('blogTitle').value.trim(),
-    category: document.getElementById('blogCategory').value.trim(),
+    category: getCheckedBlogCategories(),
     excerpt: document.getElementById('blogExcerpt').value.trim(),
     content: document.getElementById('blogContent').value.trim(),
     image_note: document.getElementById('blogImageNote').value.trim(),
@@ -906,6 +933,7 @@ document.getElementById('changePwBtn').addEventListener('click', async () => {
 });
 
 // --- init ---
+initBlogCategoryChecks();
 loadAnalytics();
 loadBlog();
 loadHodo();

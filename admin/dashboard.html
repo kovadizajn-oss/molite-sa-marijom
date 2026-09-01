@@ -77,7 +77,10 @@
         <input type="hidden" id="blogId">
         <div class="form-grid">
           <div><label>Naslov</label><input class="field" id="blogTitle"></div>
-          <div><label>Kategorija</label><input class="field" id="blogCategory" placeholder="npr. Molitva"></div>
+          <div class="full">
+            <label>Kategorije (odaberi jednu ili više)</label>
+            <div class="checkbox-grid" id="blogCategoryChecks"></div>
+          </div>
           <div class="full"><label>Kratki opis (excerpt)</label><input class="field" id="blogExcerpt"></div>
           <div class="full"><label>Sadržaj</label><textarea class="field" id="blogContent"></textarea></div>
           <div class="full">

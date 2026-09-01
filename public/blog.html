@@ -62,14 +62,7 @@
 
 <section>
   <div class="container">
-    <div class="tag-row" style="justify-content:center;">
-      <span class="tag">Sve objave</span>
-      <span class="tag">Molitva</span>
-      <span class="tag">Svakodnevni život</span>
-      <span class="tag">Biblija</span>
-      <span class="tag">Milost</span>
-      <span class="tag">Post i korizma</span>
-    </div>
+    <div class="tag-row" style="justify-content:center;" id="blogCategoryRow"></div>
 
     <div class="grid grid-3" id="blogGrid">
       <p class="empty-msg">Učitavanje objava...</p>
@@ -114,17 +107,27 @@
     return `<div class="rating-summary"><span class="stars">${renderStars(r.average)}</span><span>${r.average.toFixed(1)} (${r.count})</span></div>`;
   }
 
+  // Isti fiksni popis kategorija kao u admin panelu. Objava može imati više kategorija
+  // odjednom, spremljenih kao string odvojen zarezima (npr. "Ljubav, Obitelj").
+  const BLOG_CATEGORIES = ['Ljubav', 'Patnja', 'Molitva', 'Zlo i kušnje', 'Oprost', 'Samoća', 'Obitelj', 'Euharistija', 'Marija', 'Sveci', 'Duhovni rast', 'Smrt i vječnost', 'Život'];
+
   const PAGE_SIZE = 6;
   let shownCount = PAGE_SIZE;
+  let activeCategory = null;
+
+  function postCategories(p) {
+    return String(p.category || '').split(',').map((s) => s.trim()).filter(Boolean);
+  }
 
   function cardHtml(p, ratings) {
+    const cats = postCategories(p);
     return `
       <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
         ${p.image_url
           ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:170px; object-fit:cover; display:block;">`
           : `<div class="ph" style="min-height:170px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
         <div class="card-body">
-          <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${p.category ? ' · ' + escHtml(p.category) : ''}</p>
+          <p style="color:var(--muted); font-size:0.75rem;">${fmtDate(p.created_at)}${cats.length ? ' · ' + escHtml(cats.join(', ')) : ''}</p>
           <h3>${escHtml(p.title)}</h3>
           <p>${escHtml(p.excerpt || (p.content || '').slice(0, 120))}</p>
           ${ratingHtml(ratings[p.id])}
@@ -134,28 +137,56 @@
     `;
   }
 
-  function renderBlogPage(posts, ratings) {
+  function renderCategoryRow() {
+    const row = document.getElementById('blogCategoryRow');
+    const allBtn = `<button type="button" class="tag tag-btn${activeCategory ? '' : ' active'}" data-cat="">Sve objave</button>`;
+    const catBtns = BLOG_CATEGORIES.map((cat) => `<button type="button" class="tag tag-btn${activeCategory === cat ? ' active' : ''}" data-cat="${escHtml(cat)}">${escHtml(cat)}</button>`).join('');
+    row.innerHTML = allBtn + catBtns;
+    row.querySelectorAll('.tag-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeCategory = btn.dataset.cat || null;
+        shownCount = PAGE_SIZE;
+        renderCategoryRow();
+        renderBlogPage();
+      });
+    });
+  }
+
+  function renderBlogPage() {
     const grid = document.getElementById('blogGrid');
     const loadMoreBtn = document.getElementById('blogLoadMoreBtn');
-    const visible = posts.slice(0, shownCount);
-    grid.innerHTML = visible.map((p) => cardHtml(p, ratings)).join('');
-    loadMoreBtn.style.display = shownCount < posts.length ? 'inline-flex' : 'none';
+    const filtered = activeCategory ? allPosts.filter((p) => postCategories(p).includes(activeCategory)) : allPosts;
+    if (!filtered.length) {
+      grid.innerHTML = '<p style="color:var(--muted);">Nema objava u ovoj kategoriji.</p>';
+      loadMoreBtn.style.display = 'none';
+      return;
+    }
+    const visible = filtered.slice(0, shownCount);
+    grid.innerHTML = visible.map((p) => cardHtml(p, allRatings)).join('');
+    loadMoreBtn.style.display = shownCount < filtered.length ? 'inline-flex' : 'none';
   }
+
+  let allPosts = [];
+  let allRatings = {};
+
+  renderCategoryRow();
 
   Promise.all([
     fetch('/api/blog').then((r) => r.json()),
     fetch('/api/blog-ratings/summary').then((r) => r.json()).catch(() => ({})),
   ])
     .then(([posts, ratings]) => {
+      allPosts = posts;
+      allRatings = ratings;
       const grid = document.getElementById('blogGrid');
       if (!posts.length) {
         grid.innerHTML = '<p style="color:var(--muted);">Trenutno nema objava. Vratite se uskoro!</p>';
         return;
       }
-      renderBlogPage(posts, ratings);
+      renderBlogPage();
       document.getElementById('blogLoadMoreBtn').addEventListener('click', () => {
         shownCount += PAGE_SIZE;
-        renderBlogPage(posts, ratings);
+        renderBlogPage();
       });
     })
     .catch(() => {

@@ -677,6 +677,14 @@ textarea.field{ resize: vertical; min-height: 120px; }
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
+.tag-btn{
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.tag-btn:hover{ background: var(--gold-light); }
+.tag-btn.active{ background: var(--gold); color: #fff; }
 
 .timeline{ border-left: 2px solid var(--line); padding-left: 26px; display: flex; flex-direction: column; gap: 30px; }
 .timeline .item{ position: relative; }
