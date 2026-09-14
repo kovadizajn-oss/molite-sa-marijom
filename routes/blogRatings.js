@@ -4,9 +4,11 @@ const db = require('../db');
 
 const router = express.Router();
 
-// Ista logika anonimnog kolačića kao za brojanje posjeta (vid) — koristi se ovdje da
-// jedna osoba može ocijeniti isti blog samo jednom (kasniji klik samo mijenja njenu ocjenu,
-// ne dodaje novu). Bez imena, bez IP adrese, bez ikakvih osobnih podataka.
+// Kolačić se i dalje koristi za analitiku posjeta, ali NE za ograničavanje ocjenjivanja —
+// svaki klik na zvjezdice broji se kao nova ocjena, čak i od iste osobe. Unutar jednog
+// otvaranja stranice gumbi se zaključaju nakon klika (da se izbjegne slučajno višestruko
+// slanje), ali čim se stranica ponovno učita (izađe pa se vrati), može se opet ocijeniti —
+// i tako svaki put iznova, bez ograničenja.
 const VISITOR_COOKIE = 'vid';
 const VISITOR_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30; // 30 dana
 
@@ -45,24 +47,16 @@ router.get('/blog-ratings/summary', async (req, res) => {
   res.json(summary);
 });
 
-// --- Javno: dohvat prosjeka ocjena + je li ova osoba (kolačić) već ocijenila ---
+// --- Javno: dohvat prosjeka ocjena (bez "već ocijenjeno" provjere — svako učitavanje kreće ispočetka) ---
 router.get('/blog/:id/rating', async (req, res) => {
   const postId = req.params.id;
-  const visitorId = req.cookies && req.cookies[VISITOR_COOKIE];
   const summary = await getSummary(postId);
-  let myRating = null;
-  if (visitorId) {
-    const { rows } = await db.query(
-      'SELECT rating FROM blog_ratings WHERE post_id = $1 AND visitor_hash = $2',
-      [postId, visitorId]
-    );
-    if (rows[0]) myRating = rows[0].rating;
-  }
   res.set('Cache-Control', 'no-store');
-  res.json({ average: summary.average, count: summary.count, myRating });
+  res.json({ average: summary.average, count: summary.count });
 });
 
-// --- Javno: ocijeni (1-5 zvjezdica), anonimno, bez komentara ---
+// --- Javno: ocijeni (1-5 zvjezdica), anonimno, bez komentara — svaki klik je nova ocjena,
+// bez ograničenja koliko puta ista osoba može ocijeniti tijekom vremena ---
 router.post('/blog/:id/rating', async (req, res) => {
   const postId = req.params.id;
   const rating = Number(req.body && req.body.rating);
@@ -74,11 +68,7 @@ router.post('/blog/:id/rating', async (req, res) => {
   if (!postRows[0]) return res.status(404).json({ error: 'Objava nije pronađena.' });
 
   const visitorId = getOrSetVisitorId(req, res);
-  await db.query(
-    `INSERT INTO blog_ratings (post_id, visitor_hash, rating) VALUES ($1, $2, $3)
-     ON CONFLICT (post_id, visitor_hash) DO UPDATE SET rating = EXCLUDED.rating`,
-    [postId, visitorId, rating]
-  );
+  await db.query('INSERT INTO blog_ratings (post_id, visitor_hash, rating) VALUES ($1, $2, $3)', [postId, visitorId, rating]);
 
   const summary = await getSummary(postId);
   res.set('Cache-Control', 'no-store');

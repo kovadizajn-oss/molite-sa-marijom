@@ -146,6 +146,11 @@ async function initDb() {
   await ensureColumn('testimonies', 'title', "TEXT DEFAULT ''");
   await ensureColumn('testimonies', 'source', "TEXT DEFAULT 'user'");
   await ensureColumn('testimonies', 'pdf_url', "TEXT DEFAULT ''");
+
+  // Blog ocjene više nisu ograničene na jednu po osobi — ista osoba smije ocijeniti
+  // isti blog opet i opet (svaki put kad se vrati), pa uklanjamo staro ograničenje
+  // koje je to sprječavalo na razini baze.
+  await pool.query('ALTER TABLE blog_ratings DROP CONSTRAINT IF EXISTS blog_ratings_post_id_visitor_hash_key');
   await ensureColumn('daily_thoughts', 'image_url', "TEXT DEFAULT ''");
   await ensureColumn('blog_posts', 'views', 'INTEGER DEFAULT 0');
 

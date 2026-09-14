@@ -207,12 +207,10 @@
       });
     });
 
-    fetch('/api/blog/' + postId + '/rating')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data && data.myRating) lock(data.myRating);
-      })
-      .catch(() => {});
+    // Napomena: svjesno se NE provjerava je li ova osoba već ocijenila objavu — zvjezdice
+    // uvijek kreću "prazne" pri svakom otvaranju stranice, pa se može ocijeniti iznova
+    // svaki put kad se korisnik vrati (zaključavanje ispod je samo unutar ovog jednog
+    // otvaranja stranice, da se izbjegne slučajno višestruko slanje istim klikom).
   }
 </script>
 
