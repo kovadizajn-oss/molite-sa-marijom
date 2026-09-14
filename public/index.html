@@ -77,6 +77,7 @@
         <img id="dtImageDisplay" src="" alt="" style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:14px; display:none; margin-bottom:14px;">
         <blockquote id="dtQuoteDisplay">"Gospodin je pastir moj, ničeg mi ne nedostaje."</blockquote>
         <p id="dtSourceDisplay" style="color:var(--muted); font-size:0.78rem; margin:0 0 12px;">– Psalam 23,1</p>
+        <button type="button" class="btn btn-outline" id="dtShareBtn">📤 Podijeli</button>
       </div>
     </div>
   </div>
@@ -103,6 +104,42 @@
       .catch(() => {
         // nema objavljene misli dana — ostaje zadani tekst iz HTML-a
       });
+
+    // --- Dijeljenje misli dana (npr. kao WhatsApp status) ---
+    const shareBtn = document.getElementById('dtShareBtn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', async () => {
+        const quote = document.getElementById('dtQuoteDisplay').textContent.trim();
+        const source = document.getElementById('dtSourceDisplay').textContent.trim();
+        const img = document.getElementById('dtImageDisplay');
+        const shareText = [quote, source].filter(Boolean).join('\n') + '\n\nmolitesmarijom.com';
+        const shareUrl = window.location.origin + '/';
+
+        try {
+          if (navigator.share) {
+            let files = [];
+            // Pokušaj priložiti i sliku (npr. za WhatsApp status) ako preglednik to podržava
+            if (img && img.style.display !== 'none' && img.src && navigator.canShare) {
+              try {
+                const resp = await fetch(img.src);
+                const blob = await resp.blob();
+                const file = new File([blob], 'misao-dana.jpg', { type: blob.type || 'image/jpeg' });
+                if (navigator.canShare({ files: [file] })) files = [file];
+              } catch (e) {
+                // ako slika ne uspije, nastavljamo bez nje (dijeli se samo tekst)
+              }
+            }
+            await navigator.share(files.length ? { text: shareText, files } : { text: shareText, url: shareUrl });
+            return;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return; // korisnik je otkazao dijeljenje
+        }
+
+        // Preglednici bez Web Share API-ja (uglavnom desktop) — izravno otvori WhatsApp s tekstom
+        window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+      });
+    }
   })();
 </script>
 
