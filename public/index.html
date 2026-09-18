@@ -167,6 +167,15 @@
     function escHtml(s) {
       return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
+    function fmtDate(s) {
+      if (!s) return '';
+      const d = new Date(s);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    function postCategories(p) {
+      return String(p.category || '').split(',').map((s) => s.trim()).filter(Boolean);
+    }
     function renderStars(average) {
       const full = Math.round(average);
       return '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5 - full);
@@ -187,26 +196,66 @@
           grid.innerHTML = '<p style="color:var(--muted);">Uskoro prve objave.</p>';
           return;
         }
-        grid.innerHTML = latest.map((p) => `
+        grid.innerHTML = latest.map((p) => {
+          const cats = postCategories(p);
+          return `
           <a href="post.html?id=${p.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
             ${p.image_url
               ? `<img src="${escHtml(p.image_url)}" alt="${escHtml(p.image_note || p.title)}" style="width:100%; height:180px; object-fit:cover; display:block;">`
               : `<div class="ph" style="min-height:180px; border-radius:0;"><span>${escHtml(p.image_note || 'Slika uz objavu')}</span></div>`}
             <div class="card-body">
+              <div class="card-meta-row">
+                <p style="color:var(--muted); font-size:0.75rem; margin:0;">${fmtDate(p.created_at)}${cats.length ? ' · ' + escHtml(cats.join(', ')) : ''}</p>
+                <button type="button" class="card-share-btn" data-share-id="${p.id}" aria-label="Podijeli objavu" title="Podijeli">📤</button>
+              </div>
               <h3>${escHtml(p.title)}</h3>
               <p>${escHtml(p.excerpt || (p.content || '').slice(0, 100))}</p>
               ${ratingHtml(ratings[p.id])}
               <span class="card-link">Pročitaj više →</span>
             </div>
           </a>
-        `).join('');
+        `;
+        }).join('');
         if (posts.length > 3) {
           document.getElementById('homeBlogMore').style.display = 'block';
         }
+        document.getElementById('homeBlogGrid').addEventListener('click', (e) => {
+          const btn = e.target.closest('.card-share-btn');
+          if (!btn) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const post = latest.find((p) => String(p.id) === btn.dataset.shareId);
+          if (post) shareBlogPost(post);
+        });
       })
       .catch(() => {
         document.getElementById('homeBlogGrid').innerHTML = '<p style="color:var(--muted);">Objave se trenutno ne mogu učitati.</p>';
       });
+
+    // --- Dijeljenje objave izravno s kartice (npr. kao WhatsApp status ili link) ---
+    async function shareBlogPost(p) {
+      const shareTitle = p.title || 'Molite s Marijom';
+      const shareUrl = window.location.origin + '/post.html?id=' + p.id;
+      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\nmolitesmarijom.com';
+      try {
+        if (navigator.share) {
+          let files = [];
+          if (p.image_url && navigator.canShare) {
+            try {
+              const resp = await fetch(p.image_url);
+              const blob = await resp.blob();
+              const file = new File([blob], 'objava.jpg', { type: blob.type || 'image/jpeg' });
+              if (navigator.canShare({ files: [file] })) files = [file];
+            } catch (e) { /* nastavljamo bez slike */ }
+          }
+          await navigator.share(files.length ? { text: shareText, files } : { title: shareTitle, text: shareText, url: shareUrl });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+    }
   })();
 </script>
 
