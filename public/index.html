@@ -112,8 +112,8 @@
         const quote = document.getElementById('dtQuoteDisplay').textContent.trim();
         const source = document.getElementById('dtSourceDisplay').textContent.trim();
         const img = document.getElementById('dtImageDisplay');
-        const shareText = [quote, source].filter(Boolean).join('\n') + '\n\nmolitesmarijom.com';
         const shareUrl = window.location.origin + '/';
+        const shareText = [quote, source].filter(Boolean).join('\n') + '\n\n' + shareUrl;
 
         try {
           if (navigator.share) {
@@ -137,7 +137,7 @@
         }
 
         // Preglednici bez Web Share API-ja (uglavnom desktop) — izravno otvori WhatsApp s tekstom
-        window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+        window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
       });
     }
   })();
@@ -236,7 +236,7 @@
     async function shareBlogPost(p) {
       const shareTitle = p.title || 'Molite s Marijom';
       const shareUrl = window.location.origin + '/post.html?id=' + p.id;
-      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\nmolitesmarijom.com';
+      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\n' + shareUrl;
       try {
         if (navigator.share) {
           let files = [];
@@ -254,7 +254,7 @@
       } catch (err) {
         if (err && err.name === 'AbortError') return;
       }
-      window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
     }
   })();
 </script>

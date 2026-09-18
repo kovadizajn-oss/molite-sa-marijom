@@ -178,7 +178,7 @@
   async function shareBlogPost(p) {
     const shareTitle = p.title || 'Molite s Marijom';
     const shareUrl = window.location.origin + '/post.html?id=' + p.id;
-    const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\nmolitesmarijom.com';
+    const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\n' + shareUrl;
     try {
       if (navigator.share) {
         let files = [];
@@ -196,7 +196,7 @@
     } catch (err) {
       if (err && err.name === 'AbortError') return;
     }
-    window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+    window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
   }
 
   document.getElementById('blogGrid').addEventListener('click', (e) => {

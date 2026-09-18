@@ -163,7 +163,7 @@
     shareBtn.addEventListener('click', async () => {
       const shareTitle = p.title || 'Molite s Marijom';
       const shareUrl = window.location.href;
-      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\nmolitesmarijom.com';
+      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\n' + shareUrl;
       try {
         if (navigator.share) {
           let files = [];
@@ -181,7 +181,7 @@
       } catch (err) {
         if (err && err.name === 'AbortError') return;
       }
-      window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
     });
   }
 
