@@ -272,6 +272,24 @@ section{ padding: 64px 0; }
   gap: 6px;
 }
 
+.card-meta-row{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.card-share-btn{
+  background: var(--gold-light);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.card-share-btn:hover{ background: var(--gold); }
+
 .grid{ display: grid; gap: 28px; }
 .grid-3{ grid-template-columns: repeat(3, 1fr); }
 .grid-2{ grid-template-columns: repeat(2, 1fr); }
