@@ -56,6 +56,7 @@
   <div class="container">
     <h1 id="postTitle"></h1>
     <p class="lead" id="postMeta"></p>
+    <button type="button" class="btn btn-outline" id="postShareBtn">📤 Podijeli</button>
   </div>
 </section>
 
@@ -147,11 +148,41 @@
         document.getElementById('postBody').style.display = '';
 
         initRating(id);
+        initShare(p);
       })
       .catch(() => {
         document.getElementById('postLoading').style.display = 'none';
         document.getElementById('postNotFound').style.display = '';
       });
+  }
+
+  // --- Dijeljenje objave (npr. kao WhatsApp status ili link) ---
+  function initShare(p) {
+    const shareBtn = document.getElementById('postShareBtn');
+    if (!shareBtn) return;
+    shareBtn.addEventListener('click', async () => {
+      const shareTitle = p.title || 'Molite s Marijom';
+      const shareUrl = window.location.href;
+      const shareText = shareTitle + (p.excerpt ? '\n' + p.excerpt : '') + '\n\nmolitesmarijom.com';
+      try {
+        if (navigator.share) {
+          let files = [];
+          if (p.image_url && navigator.canShare) {
+            try {
+              const resp = await fetch(p.image_url);
+              const blob = await resp.blob();
+              const file = new File([blob], 'objava.jpg', { type: blob.type || 'image/jpeg' });
+              if (navigator.canShare({ files: [file] })) files = [file];
+            } catch (e) { /* nastavljamo bez slike */ }
+          }
+          await navigator.share(files.length ? { text: shareText, files } : { title: shareTitle, text: shareText, url: shareUrl });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n' + shareUrl), '_blank');
+    });
   }
 
   function initRating(postId) {
