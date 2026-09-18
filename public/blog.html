@@ -62,6 +62,9 @@
 
 <section>
   <div class="container">
+    <div style="max-width:420px; margin:0 auto 8px;">
+      <input type="text" class="field" id="blogSearchInput" placeholder="🔍 Pretraži naslov objave..." style="text-align:center;">
+    </div>
     <div class="tag-row" style="justify-content:center;" id="blogCategoryRow"></div>
 
     <div class="grid grid-3" id="blogGrid">
@@ -155,9 +158,11 @@
   function renderBlogPage() {
     const grid = document.getElementById('blogGrid');
     const loadMoreBtn = document.getElementById('blogLoadMoreBtn');
-    const filtered = activeCategory ? allPosts.filter((p) => postCategories(p).includes(activeCategory)) : allPosts;
+    let filtered = activeCategory ? allPosts.filter((p) => postCategories(p).includes(activeCategory)) : allPosts;
+    const q = searchQuery.trim().toLowerCase();
+    if (q) filtered = filtered.filter((p) => String(p.title || '').toLowerCase().includes(q));
     if (!filtered.length) {
-      grid.innerHTML = '<p style="color:var(--muted);">Nema objava u ovoj kategoriji.</p>';
+      grid.innerHTML = `<p style="color:var(--muted);">${q ? 'Nema objava s tim naslovom.' : 'Nema objava u ovoj kategoriji.'}</p>`;
       loadMoreBtn.style.display = 'none';
       return;
     }
@@ -168,6 +173,17 @@
 
   let allPosts = [];
   let allRatings = {};
+  let searchQuery = '';
+
+  let searchDebounce = null;
+  document.getElementById('blogSearchInput').addEventListener('input', (e) => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      searchQuery = e.target.value;
+      shownCount = PAGE_SIZE;
+      renderBlogPage();
+    }, 150);
+  });
 
   renderCategoryRow();
 
