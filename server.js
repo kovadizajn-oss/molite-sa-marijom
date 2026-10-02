@@ -18,6 +18,7 @@ const booksRoutes = require('./routes/books');
 const configRoutes = require('./routes/config');
 const blogRatingsRoutes = require('./routes/blogRatings');
 const blogSuggestionsRoutes = require('./routes/blogSuggestions');
+const blogCommentsRoutes = require('./routes/blogComments');
 const ogPagesRoutes = require('./routes/ogPages');
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api', booksRoutes);
 app.use('/api', configRoutes);
 app.use('/api', blogRatingsRoutes);
 app.use('/api', blogSuggestionsRoutes);
+app.use('/api', blogCommentsRoutes);
 
 // --- Jednostavno brojanje posjeta javnih stranica ---
 // Jedinstveni posjetitelj prati se anonimnim kolačićem (nasumičan id, bez IP adrese,

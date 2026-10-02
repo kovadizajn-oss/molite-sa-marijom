@@ -829,6 +829,39 @@ window.deleteSuggestion = async function (id) {
   loadBlogSuggestions();
 };
 
+// ================= BLOG COMMENTS =================
+async function loadBlogComments() {
+  const rows = await api('/api/admin/blog-comments');
+  const tbody = document.querySelector('#blogCommentsTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('blogCommentsEmpty').style.display = rows.length ? 'none' : 'block';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(r.post_title) || '—'}</td>
+      <td>${esc(r.name) || 'Anonimno'}</td>
+      <td style="max-width:320px;">${esc(r.comment)}</td>
+      <td><span class="badge ${r.status}">${r.status}</span></td>
+      <td>${fmtDate(r.created_at)}</td>
+      <td class="actions">
+        ${r.status !== 'approved' ? `<button class="btn small" onclick="setCommentStatus(${r.id},'approved')">Odobri</button>` : ''}
+        ${r.status !== 'rejected' ? `<button class="btn secondary small" onclick="setCommentStatus(${r.id},'rejected')">Odbij</button>` : ''}
+        <button class="btn danger small" onclick="deleteComment(${r.id})">Obriši</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+window.setCommentStatus = async function (id, status) {
+  await api('/api/admin/blog-comments/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+  loadBlogComments();
+};
+window.deleteComment = async function (id) {
+  if (!confirm('Obrisati ovaj komentar?')) return;
+  await api('/api/admin/blog-comments/' + id, { method: 'DELETE' });
+  loadBlogComments();
+};
+loadBlogComments();
+
 // ================= DAILY THOUGHT =================
 async function loadDailyThoughts() {
   const rows = await api('/api/admin/daily-thoughts');

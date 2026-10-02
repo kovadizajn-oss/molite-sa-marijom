@@ -84,6 +84,19 @@
       <p class="rating-thanks" id="ratingThanks"></p>
     </div>
 
+    <div class="form-box" style="margin-top:32px;">
+      <h3 style="text-align:center;">Ostavite komentar</h3>
+      <p style="color:var(--brown-2); font-size:0.88rem; text-align:center; margin-bottom:18px;">Vaš komentar bit će vidljiv nakon odobrenja.</p>
+      <form id="commentForm">
+        <input class="field" type="text" id="commentName" placeholder="Vaše ime (opcionalno)">
+        <textarea class="field" id="commentText" placeholder="Vaš komentar..." required></textarea>
+        <button class="btn btn-gold btn-block" type="submit">Objavi komentar</button>
+        <p id="commentFormMsg" style="margin-top:12px; font-size:0.88rem; text-align:center;"></p>
+      </form>
+    </div>
+
+    <div id="commentsList" style="margin-top:28px;"></div>
+
     <div style="margin-top:40px;">
       <a href="blog.html" class="btn btn-outline">← Natrag na blog</a>
     </div>
@@ -149,6 +162,7 @@
 
         initRating(id);
         initShare(p);
+        initComments(id);
       })
       .catch(() => {
         document.getElementById('postLoading').style.display = 'none';
@@ -182,6 +196,62 @@
         if (err && err.name === 'AbortError') return;
       }
       window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+    });
+  }
+
+  // --- Komentari: prikaz odobrenih + slanje novog (ide na čekanje odobrenja) ---
+  function initComments(postId) {
+    const listEl = document.getElementById('commentsList');
+    const form = document.getElementById('commentForm');
+    const msgEl = document.getElementById('commentFormMsg');
+
+    function loadComments() {
+      fetch('/api/blog/' + postId + '/comments')
+        .then((r) => r.json())
+        .then((comments) => {
+          if (!Array.isArray(comments) || !comments.length) {
+            listEl.innerHTML = '';
+            return;
+          }
+          listEl.innerHTML = '<h3 style="margin-bottom:14px;">Komentari (' + comments.length + ')</h3>' +
+            comments.map((c) => `
+              <div style="border-bottom:1px solid var(--line); padding:14px 0;">
+                <p style="font-weight:600; margin-bottom:4px;">${escHtml(c.name || 'Anonimno')}</p>
+                <p style="color:var(--brown-2); font-size:0.95rem; white-space:pre-wrap;">${escHtml(c.comment)}</p>
+                <p style="color:var(--muted); font-size:0.75rem; margin-top:6px;">${fmtDate(c.created_at)}</p>
+              </div>
+            `).join('');
+        })
+        .catch(() => { /* tiho — komentari nisu kritični za prikaz objave */ });
+    }
+
+    loadComments();
+
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('commentName').value.trim();
+      const comment = document.getElementById('commentText').value.trim();
+      if (!comment) {
+        msgEl.style.color = '#a34a3c';
+        msgEl.textContent = 'Upišite svoj komentar.';
+        return;
+      }
+      try {
+        const res = await fetch('/api/blog/' + postId + '/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, comment }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Greška pri slanju.');
+        msgEl.style.color = 'var(--gold-dark)';
+        msgEl.textContent = data.message;
+        form.reset();
+      } catch (err) {
+        msgEl.style.color = '#a34a3c';
+        msgEl.textContent = err.message;
+      }
     });
   }
 

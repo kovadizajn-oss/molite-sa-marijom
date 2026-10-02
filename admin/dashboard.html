@@ -20,6 +20,7 @@
       <button class="tab-btn" data-tab="testimonies">👥 Svjedočanstva</button>
       <button class="tab-btn" data-tab="questions">💬 Pitanja</button>
       <button class="tab-btn" data-tab="blog-suggestions">💡 Prijedlozi za blog</button>
+      <button class="tab-btn" data-tab="blog-comments">💬 Komentari</button>
       <button class="tab-btn" data-tab="daily-thought">☀ Misao dana</button>
       <button class="tab-btn" data-tab="settings">⚙ Postavke</button>
     </nav>
@@ -306,6 +307,16 @@
       <div class="panel">
         <table id="blogSuggestionsTable"><thead><tr><th>Ime</th><th>Prijedlog</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
         <div class="empty" id="blogSuggestionsEmpty" style="display:none;">Nema još prijedloga.</div>
+      </div>
+    </section>
+
+    <!-- BLOG COMMENTS -->
+    <section class="tab-panel" id="tab-blog-comments">
+      <h1>Komentari na blog</h1>
+      <p class="sub">Komentari koje su ljudi ostavili ispod blog objava. Prikazuju se javno tek nakon odobrenja.</p>
+      <div class="panel">
+        <table id="blogCommentsTable"><thead><tr><th>Objava</th><th>Ime</th><th>Komentar</th><th>Status</th><th>Datum</th><th>Radnje</th></tr></thead><tbody></tbody></table>
+        <div class="empty" id="blogCommentsEmpty" style="display:none;">Nema još komentara.</div>
       </div>
     </section>
 

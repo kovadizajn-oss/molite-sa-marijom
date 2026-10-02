@@ -137,6 +137,15 @@ async function initDb() {
       status TEXT DEFAULT 'new',
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS blog_comments (
+      id SERIAL PRIMARY KEY,
+      post_id INTEGER NOT NULL,
+      name TEXT DEFAULT '',
+      comment TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
 
   // Migracije za baze koje su možda nastale prije nego su ove kolone dodane
