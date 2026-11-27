@@ -163,6 +163,10 @@ async function initDb() {
   await ensureColumn('daily_thoughts', 'image_url', "TEXT DEFAULT ''");
   await ensureColumn('blog_posts', 'views', 'INTEGER DEFAULT 0');
 
+  // Odgovor admina na komentar — točno jedan po komentaru (namjerno bez prepiske)
+  await ensureColumn('blog_comments', 'reply', "TEXT DEFAULT ''");
+  await ensureColumn('blog_comments', 'replied_at', 'TIMESTAMPTZ');
+
   // Seed početnog admin računa ako još ne postoji nijedan
   const { rows } = await pool.query('SELECT COUNT(*)::int as c FROM admin_users');
   if (rows[0].c === 0) {

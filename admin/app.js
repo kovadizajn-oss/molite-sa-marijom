@@ -841,6 +841,10 @@ async function loadBlogComments() {
       <td>${esc(r.post_title) || '—'}</td>
       <td>${esc(r.name) || 'Anonimno'}</td>
       <td style="max-width:320px;">${esc(r.comment)}</td>
+      <td style="min-width:220px;max-width:300px;">
+        <textarea class="field" style="min-height:60px;font-size:.8rem;" id="reply-${r.id}" data-had="${r.reply ? 1 : 0}" placeholder="Napiši odgovor...">${esc(r.reply)}</textarea>
+        <button class="btn small" style="margin-top:6px;" onclick="saveCommentReply(${r.id})">${r.reply ? 'Spremi izmjenu' : 'Odgovori'}</button>
+      </td>
       <td><span class="badge ${r.status}">${r.status}</span></td>
       <td>${fmtDate(r.created_at)}</td>
       <td class="actions">
@@ -854,6 +858,21 @@ async function loadBlogComments() {
 window.setCommentStatus = async function (id, status) {
   await api('/api/admin/blog-comments/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
   loadBlogComments();
+};
+// Jedan odgovor po komentaru: spremanje ga objavljuje (i odobrava komentar), ponovno spremanje
+// ga uređuje, a spremanje praznog polja briše postojeći odgovor.
+window.saveCommentReply = async function (id) {
+  const el = document.getElementById('reply-' + id);
+  const reply = el.value.trim();
+  const hadReply = el.dataset.had === '1';
+  if (!reply && !hadReply) { alert('Upiši odgovor prije spremanja.'); return; }
+  if (!reply && !confirm('Obrisati odgovor na ovaj komentar?')) return;
+  try {
+    await api('/api/admin/blog-comments/' + id + '/reply', { method: 'PUT', body: JSON.stringify({ reply }) });
+    loadBlogComments();
+  } catch (e) {
+    alert(e.message);
+  }
 };
 window.deleteComment = async function (id) {
   if (!confirm('Obrisati ovaj komentar?')) return;
